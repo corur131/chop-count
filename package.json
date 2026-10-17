@@ -1,0 +1,13 @@
+{
+  "name": "chop-count",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calorie, macro and fitness tracker built for Nigerian food.",
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}

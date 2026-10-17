@@ -1,0 +1,102 @@
+name: Build app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Check signing secrets
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_B64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Add the ANDROID_KEYSTORE_B64 and KEYSTORE_PASSWORD secrets in Settings > Secrets and variables > Actions, then run this workflow again."
+            exit 1
+          fi
+
+      - name: Stamp build number
+        run: |
+          sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER}/g" web/index.html
+          echo "{\"build\": ${GITHUB_RUN_NUMBER}, \"apk\": \"https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/chop-count.apk\"}" > web/version.json
+
+      - name: Install Capacitor
+        run: npm install
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Generate app icon and splash
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3.0.5 generate --android --iconBackgroundColor '#17744A' --iconBackgroundColorDark '#17744A' --splashBackgroundColor '#17744A' --splashBackgroundColorDark '#0D1310'
+
+      - name: Copy web app into Android project
+        run: npx cap sync android
+
+      - name: Set version
+        run: |
+          sed -i "s/versionCode 1$/versionCode ${GITHUB_RUN_NUMBER}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.${GITHUB_RUN_NUMBER}\"/" android/app/build.gradle
+
+      - name: Build signed APK
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/release.jks" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias=chopcount \
+            -Pandroid.injected.signing.key.password="$KEYSTORE_PASSWORD"
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/chop-count.apk"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.${GITHUB_RUN_NUMBER}" chop-count.apk \
+            --title "Chop Count 1.${GITHUB_RUN_NUMBER}" \
+            --notes "Download chop-count.apk and install it over your current app. Your data stays." \
+            --latest
+
+      - name: Package web version
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+  pages:
+    needs: android
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

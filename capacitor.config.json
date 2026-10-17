@@ -1,0 +1,11 @@
+{
+  "appId": "com.corur131.chopcount",
+  "appName": "Chop Count",
+  "webDir": "web",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}

@@ -1,0 +1,1399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Calorie, macro and fitness tracker built for Nigerian food.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Chop Count">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Chop Count</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#17744A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column with a fixed bottom tab bar; two columns on wide screens (Fold inner display). */
+:root {
+  --bg: #F2F5F0;
+  --surface: #FFFFFF;
+  --surface-2: #E7EEE5;
+  --ink: #14201A;
+  --muted: #56675C;
+  --line: #D4DED2;
+  --green: #17744A;
+  --green-soft: #DCEFE3;
+  --on-green: #FFFFFF;
+  --amber: #C98A0B;
+  --prot: #2A66C4;
+  --carb: #C98A0B;
+  --fat: #C0432A;
+  --water: #1C86AB;
+  --warn: #B4531A;
+  --shadow: 0 1px 2px rgba(20,32,26,.06), 0 6px 20px rgba(20,32,26,.06);
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1310; --surface: #151D18; --surface-2: #1D2721; --ink: #E6EEE8; --muted: #98A99D; --line: #283530;
+    --green: #3DB078; --green-soft: #173726; --on-green: #06130C; --amber: #EDB13A; --prot: #6FA3F3; --carb: #EDB13A;
+    --fat: #EE7A5B; --water: #4DB6DA; --warn: #F0965A; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1310; --surface: #151D18; --surface-2: #1D2721; --ink: #E6EEE8; --muted: #98A99D; --line: #283530;
+  --green: #3DB078; --green-soft: #173726; --on-green: #06130C; --amber: #EDB13A; --prot: #6FA3F3; --carb: #EDB13A;
+  --fat: #EE7A5B; --water: #4DB6DA; --warn: #F0965A; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 1.6rem; font-weight: 800; }
+h2 { font-size: 1.15rem; font-weight: 700; }
+h3 { font-size: 1rem; font-weight: 700; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 150px; }
+.grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 680px) { .grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .col { display: grid; gap: 14px; } }
+.col { display: grid; gap: 14px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row.between { justify-content: space-between; }
+.wrapflex { display: flex; flex-wrap: wrap; gap: 8px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 50%; background: var(--green); display: grid; place-items: center; }
+.brand-mark span { width: 14px; height: 14px; border-radius: 50%; background: var(--amber); box-shadow: 9px -5px 0 -3px var(--on-green); }
+.datenav { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.datenav button { border: 0; background: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; }
+.datenav button:disabled { opacity: .3; cursor: default; }
+.datenav b { font-size: .88rem; min-width: 86px; text-align: center; }
+.btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 700; background: var(--green); color: var(--on-green); }
+.btn.ghost { background: var(--surface-2); color: var(--ink); }
+.btn.line { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.btn.danger { background: var(--fat); color: #fff; }
+.btn.sm { padding: 7px 12px; font-size: .85rem; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: default; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 13px; font-size: .86rem; font-weight: 600; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.seg { display: flex; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg label { flex: 1; text-align: center; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; padding: 8px 6px; border-radius: 9px; font-weight: 600; font-size: .88rem; cursor: pointer; }
+.seg input:checked + span { background: var(--surface); box-shadow: var(--shadow); color: var(--ink); }
+.seg input:focus-visible + span { outline: 2px solid var(--green); }
+.field { display: grid; gap: 6px; }
+.field > span { font-size: .82rem; font-weight: 600; color: var(--muted); }
+input[type=number], input[type=text], input[type=search], select, textarea { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; min-width: 0; }
+textarea { min-height: 90px; font-size: .8rem; font-family: ui-monospace, Menlo, monospace; }
+.fields { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+
+/* Today ring */
+.hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.ring { position: relative; width: 150px; height: 150px; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring .big { font-family: var(--font-display); font-weight: 800; font-size: 2rem; line-height: 1; }
+.macros { display: grid; gap: 10px; min-width: 0; }
+.macro .top { display: flex; justify-content: space-between; font-size: .85rem; gap: 6px; }
+.macro .top b { font-weight: 700; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; border-radius: 99px; }
+@media (max-width: 380px) { .hero { grid-template-columns: 1fr; justify-items: center; } .macros { width: 100%; } }
+
+.checklist { display: grid; gap: 2px; }
+.check { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.check:last-child { border-bottom: 0; }
+.tick { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: .8rem; font-weight: 800; color: transparent; }
+.tick.on { background: var(--green); border-color: var(--green); color: var(--on-green); }
+.pill { display: inline-block; font-size: .72rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.pill.ok { background: var(--green-soft); color: var(--green); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.pill.est { background: color-mix(in srgb, var(--amber) 18%, transparent); color: var(--amber); }
+
+.meal { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; }
+.meal:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.meal-head { display: flex; justify-content: space-between; align-items: baseline; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto 32px; gap: 8px; align-items: center; padding: 6px 0; font-size: .92rem; }
+.item .nm { min-width: 0; overflow-wrap: anywhere; }
+.x { border: 0; background: var(--surface-2); width: 30px; height: 30px; border-radius: 50%; color: var(--muted); font-size: 1rem; }
+
+.water-glasses { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.sachet { width: 22px; height: 30px; border-radius: 6px 6px 9px 9px; border: 2px solid var(--water); opacity: .35; }
+.sachet.full { background: var(--water); opacity: 1; }
+
+/* Log */
+.food-list { display: grid; }
+.food { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 11px 2px; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; width: 100%; }
+.food .nm { font-weight: 600; min-width: 0; }
+.food .aka { font-size: .8rem; color: var(--muted); }
+.food .kc { text-align: right; font-size: .85rem; }
+.cat-h { margin: 16px 0 2px; }
+.sug { padding-top: 12px; border-top: 1px solid var(--line); }
+.sug:first-child { padding-top: 0; border-top: 0; }
+.fav { display: inline-flex; align-items: center; gap: 8px; }
+
+.tray { position: fixed; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); z-index: 20; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+.tray-in { max-width: 640px; margin: 0 auto; background: var(--ink); color: var(--bg); border-radius: 18px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.tray-in .muted { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+.tray-list { max-height: 34vh; overflow-y: auto; margin: 10px 0; }
+.tray .item { border-bottom: 1px solid color-mix(in srgb, var(--bg) 18%, transparent); }
+.tray .x { background: color-mix(in srgb, var(--bg) 16%, transparent); color: var(--bg); }
+.tray .btn.ghost { background: color-mix(in srgb, var(--bg) 16%, transparent); color: var(--bg); }
+.tray input { background: transparent; border-color: color-mix(in srgb, var(--bg) 30%, transparent); color: var(--bg); }
+
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.tabs-in { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 640px; }
+.tab { border: 0; background: none; padding: 9px 2px 10px; display: grid; justify-items: center; gap: 3px; font-size: .72rem; font-weight: 600; color: var(--muted); }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--green); }
+.tab.add .plus { width: 40px; height: 40px; border-radius: 50%; background: var(--green); color: var(--on-green); display: grid; place-items: center; margin-top: -14px; box-shadow: var(--shadow); }
+
+/* Sheet */
+.sheet { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; }
+.sheet .scrim { position: absolute; inset: 0; background: rgba(5,10,7,.45); }
+.sheet .panel { position: relative; background: var(--surface); border-radius: 22px 22px 0 0; padding: 18px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 88vh; overflow-y: auto; width: 100%; max-width: 640px; margin: 0 auto; display: grid; gap: 14px; }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); font-size: 1.3rem; font-weight: 700; }
+.stepper b { font-family: var(--font-display); font-size: 1.5rem; min-width: 44px; text-align: center; }
+.mgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.mgrid div { background: var(--surface-2); border-radius: 12px; padding: 8px 4px; }
+.mgrid b { display: block; font-family: var(--font-display); font-size: 1.15rem; }
+.mgrid span { font-size: .72rem; color: var(--muted); font-weight: 600; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 12px; display: flex; gap: 14px; align-items: center; font-size: .9rem; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.toast button { background: none; border: 0; color: var(--amber); font-weight: 800; }
+
+/* Plan */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.wday { border-radius: 12px; padding: 8px 2px; text-align: center; background: var(--surface-2); font-size: .72rem; font-weight: 600; color: var(--muted); }
+.wday b { display: block; font-size: .8rem; color: var(--ink); }
+.wday { cursor: pointer; width: 100%; }
+.wday.today { outline: 2px solid var(--green); }
+.ex button.tick:disabled { opacity: .4; cursor: default; }
+.wday.strength { background: var(--green-soft); }
+.ex { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.ex:last-child { border-bottom: 0; }
+.ex button.tick { cursor: pointer; background: none; }
+.ex .dose { font-family: var(--font-display); font-weight: 700; }
+.figbox { margin-top: 8px; max-width: 300px; }
+.figbtn { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.fig { display: block; width: 100%; height: auto; }
+.figbox .row { margin-top: 5px; font-size: .78rem; }
+.figbox a { color: var(--green); font-weight: 700; text-decoration: none; }
+
+/* Progress */
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.suggest { border-left: 0; background: var(--green-soft); }
+.stat { display: grid; gap: 2px; }
+.stat b { font-family: var(--font-display); font-size: 1.4rem; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+/* Onboarding */
+.ob { max-width: 620px; margin: 0 auto; }
+.ob-hero { padding: 10px 0 18px; display: grid; gap: 8px; }
+.ob-hero h1 { font-size: 2.1rem; line-height: 1.05; }
+.preview { background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; }
+.preview .stats b { color: var(--bg); }
+.preview .muted { color: color-mix(in srgb, var(--bg) 68%, transparent); }
+.err { color: var(--fat); font-weight: 600; font-size: .88rem; }
+@media (prefers-reduced-motion: no-preference) { .bar i, .ring circle { transition: all .4s ease; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet" class="sheet" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+"use strict";
+/* ---------- Exercise figures: a jointed stick figure animated between two poses ---------- */
+/* Angles in degrees, SVG y-down: 0 = right, 90 = down, 180 = left, -90 = up. Floor at y = 110. */
+const FIG_LEN = { torso: 40, neck: 11, ua: 22, fa: 20, th: 27, sh: 26, foot: 8 };
+const FIGS = {
+  squat: { props: [], A: { hip: [97, 54], t: -90, hd: -90, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] },
+    B: { hip: [72, 82], t: -48, hd: -40, arms: [{ a: [-5, 0] }, { a: [-5, 0] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] } },
+  pushup: { props: [], A: { hip: [87, 84], t: -27, hd: -20, foot: 100, arms: [{ to: [127, 107], bend: 1 }, { to: [127, 107], bend: 1 }], legs: [{ to: [40, 106], bend: 1 }, { to: [40, 106], bend: 1 }] },
+    B: { hip: [92, 96], t: -12, hd: -8, foot: 100, arms: [{ to: [127, 107], bend: 1 }, { to: [127, 107], bend: 1 }], legs: [{ to: [40, 106], bend: 1 }, { to: [40, 106], bend: 1 }] } },
+  plank: { props: [], dur: 3.6, A: { hip: [91, 94], t: -14, hd: -10, foot: 100, arms: [{ a: [90, 0] }, { a: [90, 0] }], legs: [{ to: [40, 106], bend: 1 }, { to: [40, 106], bend: 1 }] },
+    B: { hip: [91, 96], t: -12, hd: -10, foot: 100, arms: [{ a: [90, 0] }, { a: [90, 0] }], legs: [{ to: [40, 106], bend: 1 }, { to: [40, 106], bend: 1 }] } },
+  sideplank: { props: [], dur: 3.6, A: { hip: [91, 92], t: -15, hd: -15, foot: 100, arms: [{ a: [90, 0] }, { a: [-80, -80] }], legs: [{ to: [40, 106], bend: 1 }, { to: [42, 104], bend: 1 }] },
+    B: { hip: [91, 97], t: -10, hd: -12, foot: 100, arms: [{ a: [90, 0] }, { a: [-80, -80] }], legs: [{ to: [40, 106], bend: 1 }, { to: [42, 104], bend: 1 }] } },
+  pike: { props: [], A: { hip: [86, 60], t: 25, hd: 30, foot: 80, arms: [{ to: [134, 107], bend: 1 }, { to: [134, 107], bend: 1 }], legs: [{ to: [56, 106], bend: 1 }, { to: [56, 106], bend: 1 }] },
+    B: { hip: [88, 62], t: 48, hd: 60, foot: 80, arms: [{ to: [134, 107], bend: 1 }, { to: [134, 107], bend: 1 }], legs: [{ to: [56, 106], bend: 1 }, { to: [56, 106], bend: 1 }] } },
+  dips: { props: ["chair"], A: { hip: [82, 78], t: -90, hd: -90, arms: [{ to: [72, 79], bend: 1 }, { to: [72, 79], bend: 1 }], legs: [{ to: [122, 107], bend: -1 }, { to: [122, 107], bend: -1 }] },
+    B: { hip: [84, 97], t: -90, hd: -90, arms: [{ to: [72, 79], bend: 1 }, { to: [72, 79], bend: 1 }], legs: [{ to: [122, 107], bend: -1 }, { to: [122, 107], bend: -1 }] } },
+  rows: { props: ["bag"], A: { hip: [88, 62], t: -28, hd: -20, arms: [{ to: [124, 84], bend: 1 }, { to: [124, 84], bend: 1 }], legs: [{ to: [96, 107], bend: -1 }, { to: [96, 107], bend: -1 }] },
+    B: { hip: [88, 62], t: -28, hd: -20, arms: [{ to: [108, 62], bend: 1 }, { to: [108, 62], bend: 1 }], legs: [{ to: [96, 107], bend: -1 }, { to: [96, 107], bend: -1 }] } },
+  lunge: { props: [], A: { hip: [104, 56], t: -90, hd: -90, arms: [{ a: [100, 35] }, { a: [100, 35] }], legs: [{ to: [108, 107], bend: -1 }, { to: [101, 107], bend: -1 }] },
+    B: { hip: [98, 82], t: -90, hd: -90, foot2: 150, arms: [{ a: [100, 35] }, { a: [100, 35] }], legs: [{ to: [112, 107], bend: -1 }, { to: [62, 104], bend: -1 }] } },
+  bridge: { props: [], A: { hip: [92, 102], t: 180, hd: 180, foot: 0, arms: [{ to: [92, 104], bend: 1 }, { to: [92, 104], bend: 1 }], legs: [{ to: [126, 106], bend: -1 }, { to: [126, 106], bend: -1 }] },
+    B: { hip: [88, 84], t: 153, hd: 170, foot: 0, arms: [{ to: [92, 104], bend: 1 }, { to: [92, 104], bend: 1 }], legs: [{ to: [126, 106], bend: -1 }, { to: [126, 106], bend: -1 }] } },
+  calf: { props: ["lowstep"], A: { hip: [96, 43], t: -90, hd: -90, foot: 12, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [96, 96], bend: -1 }, { to: [96, 96], bend: -1 }] },
+    B: { hip: [99, 35], t: -90, hd: -90, foot: 55, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [99, 88], bend: -1 }, { to: [99, 88], bend: -1 }] } },
+  stepup: { props: ["step"], A: { hip: [90, 62], t: -82, hd: -85, arms: [{ a: [100, 90] }, { a: [80, 90] }], legs: [{ to: [114, 89], bend: -1 }, { to: [86, 107], bend: -1 }] },
+    B: { hip: [110, 38], t: -90, hd: -90, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [114, 89], bend: -1 }, { to: [108, 89], bend: -1 }] } },
+  march: { props: [], A: { hip: [95, 57], t: -90, hd: -90, arms: [{ a: [120, 80] }, { a: [55, 0] }], legs: [{ a: [0, 90] }, { a: [90, 90] }] },
+    B: { hip: [95, 57], t: -90, hd: -90, arms: [{ a: [55, 0] }, { a: [120, 80] }], legs: [{ a: [90, 90] }, { a: [0, 90] }] } },
+  walk: { props: [], dur: 1.6, A: { hip: [95, 58], t: -86, hd: -88, arms: [{ a: [110, 95] }, { a: [70, 50] }], legs: [{ a: [62, 88] }, { a: [115, 125] }] },
+    B: { hip: [95, 58], t: -86, hd: -88, arms: [{ a: [70, 50] }, { a: [110, 95] }], legs: [{ a: [115, 125] }, { a: [62, 88] }] } },
+  crunch: { props: [], A: { hip: [92, 102], t: 180, hd: 180, foot: -20, arms: [{ a: [0, 0] }, { a: [0, 0] }], legs: [{ to: [124, 106], bend: -1 }, { to: [124, 106], bend: -1 }] },
+    B: { hip: [92, 102], t: 208, hd: 220, foot: -20, arms: [{ a: [-12, -12] }, { a: [-12, -12] }], legs: [{ to: [124, 106], bend: -1 }, { to: [124, 106], bend: -1 }] } },
+  legraise: { props: [], A: { hip: [92, 102], t: 180, hd: 180, foot: 0, arms: [{ a: [0, 0] }, { a: [0, 0] }], legs: [{ a: [-4, -4] }, { a: [-4, -4] }] },
+    B: { hip: [92, 102], t: 180, hd: 180, foot: -90, arms: [{ a: [0, 0] }, { a: [0, 0] }], legs: [{ a: [-82, -82] }, { a: [-82, -82] }] } },
+  superman: { props: [], dur: 3, A: { hip: [86, 103], t: 0, hd: 0, foot: 180, arms: [{ a: [0, 0] }, { a: [0, 0] }], legs: [{ a: [180, 180] }, { a: [180, 180] }] },
+    B: { hip: [86, 103], t: -10, hd: -22, foot: 190, arms: [{ a: [-14, -14] }, { a: [-14, -14] }], legs: [{ a: [192, 192] }, { a: [192, 192] }] } },
+  hamstring: { props: ["chairR"], dur: 4, A: { hip: [92, 60], t: -90, hd: -90, foot: -60, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [138, 76], bend: -1 }, { to: [90, 107], bend: -1 }] },
+    B: { hip: [92, 60], t: -38, hd: -30, foot: -60, arms: [{ a: [8, 14] }, { a: [8, 14] }], legs: [{ to: [138, 76], bend: -1 }, { to: [90, 107], bend: -1 }] } },
+  hipflexor: { props: [], dur: 4, A: { hip: [92, 79], t: -90, hd: -90, foot2: 180, arms: [{ a: [85, 30] }, { a: [85, 30] }], legs: [{ to: [126, 107], bend: -1 }, { a: [128, 180] }] },
+    B: { hip: [101, 84], t: -94, hd: -94, foot2: 180, arms: [{ a: [80, 25] }, { a: [80, 25] }], legs: [{ to: [126, 107], bend: -1 }, { a: [138, 180] }] } },
+  chest: { props: ["door"], dur: 4, A: { hip: [96, 57], t: -90, hd: -88, arms: [{ to: [121, -2], bend: 1 }, { a: [95, 90] }], legs: [{ to: [98, 107], bend: -1 }, { to: [94, 107], bend: -1 }] },
+    B: { hip: [104, 57], t: -86, hd: -82, arms: [{ to: [121, -2], bend: 1 }, { a: [95, 90] }], legs: [{ to: [106, 107], bend: -1 }, { to: [96, 107], bend: -1 }] } },
+  child: { props: [], dur: 4, A: { hip: [80, 90], t: -70, hd: -75, foot: 180, arms: [{ a: [80, 60] }, { a: [80, 60] }], legs: [{ a: [32, 180] }, { a: [32, 180] }] },
+    B: { hip: [80, 92], t: 10, hd: 12, foot: 180, arms: [{ a: [2, 2] }, { a: [2, 2] }], legs: [{ a: [32, 180] }, { a: [32, 180] }] } }
+};
+const FIG_FOR = {
+  "Push-ups": "pushup", "Backpack rows": "rows", "Chair dips": "dips", "Pike push-ups": "pike", "Plank": "plank", "Squats": "squat",
+  "Reverse lunges": "lunge", "Glute bridges": "bridge", "Calf raises on a step": "calf", "Side plank": "sideplank", "Step-ups on a stair": "stepup",
+  "Marching on the spot": "march", "Easy walk": "walk", "Brisk walk": "walk", "Crunches": "crunch", "Lying leg raises": "legraise", "Superman hold": "superman",
+  "Hamstring stretch": "hamstring", "Hip flexor stretch": "hipflexor", "Chest stretch in a doorway": "chest", "Child's pose": "child"
+};
+function figDir(a) { const r = a * Math.PI / 180; return [Math.cos(r), Math.sin(r)]; }
+function figAdd(p, a, len) { const d = figDir(a); return [p[0] + d[0] * len, p[1] + d[1] * len]; }
+function figIK(base, target, a, b, bend) {
+  const dx = target[0] - base[0], dy = target[1] - base[1];
+  let dist = Math.hypot(dx, dy); const ang = Math.atan2(dy, dx);
+  dist = Math.min(dist, a + b - 0.01);
+  const off = Math.acos(Math.max(-1, Math.min(1, (a * a + dist * dist - b * b) / (2 * a * dist || 1))));
+  const e = ang + bend * off;
+  const mid = [base[0] + Math.cos(e) * a, base[1] + Math.sin(e) * a];
+  const toEnd = Math.atan2(target[1] - mid[1], target[0] - mid[0]);
+  return [mid, [mid[0] + Math.cos(toEnd) * b, mid[1] + Math.sin(toEnd) * b]];
+}
+function figLerp(a, b, k) { return a + (b - a) * k; }
+function figPose(fig, k) {
+  const A = fig.A, B = fig.B, L = FIG_LEN;
+  const hip = [figLerp(A.hip[0], B.hip[0], k), figLerp(A.hip[1], B.hip[1], k)];
+  const t = figLerp(A.t, B.t, k), hd = figLerp(A.hd, B.hd, k);
+  const neck = figAdd(hip, t, L.torso), head = figAdd(neck, hd, L.neck);
+  const limb = (base, la, lb, ia, ib, l1, l2) => {
+    if (la.to) { const to = [figLerp(la.to[0], lb.to[0], k), figLerp(la.to[1], lb.to[1], k)]; return figIK(base, to, l1, l2, la.bend); }
+    const u = figLerp(la.a[0], lb.a[0], k), f = figLerp(la.a[1], lb.a[1], k);
+    const j = figAdd(base, u, l1); return [j, figAdd(j, f, l2)];
+  };
+  const arms = [0, 1].map(i => limb(neck, A.arms[i], B.arms[i], 0, 0, L.ua, L.fa));
+  const legs = [0, 1].map(i => limb(hip, A.legs[i], B.legs[i], 0, 0, L.th, L.sh));
+  const fa = figLerp(A.foot ?? 0, B.foot ?? 0, k), fa2 = figLerp(A.foot2 ?? A.foot ?? 0, B.foot2 ?? B.foot ?? 0, k);
+  const toes = [figAdd(legs[0][1], fa, L.foot), figAdd(legs[1][1], fa2, L.foot)];
+  return { hip, neck, head, arms, legs, toes };
+}
+function figPropsSVG(fig) {
+  return (fig.props || []).map(p => ({
+    chair: '<path d="M46 79h32M50 79v31M74 79v31M46 79V52"/>',
+    chairR: '<path d="M124 78h30M128 78v32M150 78v32M154 78V50"/>',
+    step: '<path d="M100 91h44v19M100 91v19"/>',
+    lowstep: '<path d="M80 98h44v12M80 98v12"/>',
+    door: '<path d="M122 4v106M128 4v106"/>',
+    bag: ""
+  }[p] || "")).join("");
+}
+function figFrame(fig, k) {
+  const P = figPose(fig, k), f = n => n.toFixed(1);
+  const seg = pts => "M" + pts.map(p => f(p[0]) + " " + f(p[1])).join("L");
+  const near = [seg([P.neck, P.hip]), seg([P.neck, P.arms[0][0], P.arms[0][1]]), seg([P.hip, P.legs[0][0], P.legs[0][1], P.toes[0]])].join("");
+  const far = [seg([P.neck, P.arms[1][0], P.arms[1][1]]), seg([P.hip, P.legs[1][0], P.legs[1][1], P.toes[1]])].join("");
+  const bag = (fig.props || []).includes("bag") ? P.arms[0][1] : null;
+  return { near, far, head: P.head, bag };
+}
+function figSVG(key) {
+  const fig = FIGS[key]; if (!fig) return "";
+  const fr = figFrame(fig, 0);
+  return `<svg class="fig" viewBox="0 -14 200 130" data-fig="${key}" role="img" aria-label="Animated demonstration">
+    <line x1="8" y1="110" x2="192" y2="110" stroke="var(--line)" stroke-width="2"/>
+    <g fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${figPropsSVG(fig)}</g>
+    <path class="f-far" d="${fr.far}" fill="none" stroke="var(--muted)" stroke-opacity=".55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${fr.bag ? `<rect class="f-bag" x="${(fr.bag[0] - 7).toFixed(1)}" y="${(fr.bag[1] - 2).toFixed(1)}" width="14" height="16" rx="3" fill="var(--amber)"/>` : ""}
+    <path class="f-near" d="${fr.near}" fill="none" stroke="var(--green)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="f-head" cx="${fr.head[0].toFixed(1)}" cy="${fr.head[1].toFixed(1)}" r="7.5" fill="var(--green)"/>
+  </svg>`;
+}
+
+/* ---------- Food database (per 100 g as eaten). Sources: FAO/INFOODS WAFCT 2019, USDA, Nigerian lab studies, recipe estimates. ---------- */
+const FOODS = [["eba","Eba (garri swallow)","Eba, garri","Swallow",140,0.5,33.2,0.2,2.0,"1 medium wrap",300,"B","WAFCT 02_039 gari x 40%"],["pounded_yam","Pounded yam","Iyan, pounded yam","Swallow",136,1.9,28.7,0.2,6.0,"1 medium wrap",300,"A","WAFCT 02_078 Nigerian yam, boiled"],["amala","Amala (yam flour)","Amala isu, elubo","Swallow",114,2.4,23.2,0.2,5.0,"1 medium wrap",300,"B","WAFCT 02_036 yam flour x 35%"],["amala_lafun","Amala lafun (cassava flour)","Lafun, white amala","Swallow",120,0.5,28.4,0.2,1.4,"1 medium wrap",300,"B","WAFCT 02_038 lafun flour x 35%"],["fufu","Fufu (fermented cassava)","Akpu, santana","Swallow",165,1.0,38.7,0.4,1.7,"1 medium wrap",300,"A","WAFCT 02_041 wet fufu"],["semo","Semovita / semolina swallow","Semo","Swallow",110,3.7,22.5,0.3,1.2,"1 medium wrap",300,"B","Calculated from reference values"],["wheat_swallow","Wheat meal swallow","Wheat","Swallow",100,3.5,20.0,0.6,2.8,"1 medium wrap",300,"B","Calculated from reference values"],["starch_usi","Starch (usi)","Usi, Urhobo/Isoko starch","Swallow",110,0.1,27.0,0.0,0.3,"1 medium wrap",300,"B","Calculated from reference values"],["tuwo_shinkafa","Tuwo shinkafa (rice)","Tuwo","Swallow",112,2.2,24.5,0.2,0.4,"1 medium wrap",300,"B","Calculated from reference values"],["tuwo_masara","Tuwo masara (maize)","Tuwo","Swallow",131,3.2,25.4,1.2,2.6,"1 medium wrap",300,"A","WAFCT 01_107 stiff maize porridge"],["plantain_swallow","Unripe plantain flour swallow","Plantain fufu","Swallow",115,1.5,22.6,1.1,4.6,"1 medium wrap",300,"B","WAFCT 02_048 plantain flour x 35%"],["oat_swallow","Oatmeal swallow","Oat swallow","Swallow",90,3.0,15.0,1.6,2.0,"1 medium wrap",300,"B","Calculated from reference values"],["white_rice","White rice, boiled","Rice","Rice & grains",118,2.3,26.4,0.2,0.6,"1 plate",300,"A","WAFCT 01_134 polished rice, boiled"],["jollof_rice","Jollof rice","Jollof","Rice & grains",170,3.2,27.0,5.4,0.8,"1 plate",300,"C","Recipe estimate"],["fried_rice","Nigerian fried rice","Fried rice","Rice & grains",180,4.0,26.0,6.5,1.2,"1 plate",300,"C","Recipe estimate"],["coconut_rice","Coconut rice","Coconut rice","Rice & grains",190,3.0,28.0,7.5,1.0,"1 plate",300,"C","Recipe estimate"],["ofada_rice","Ofada rice, boiled","Ofada","Rice & grains",141,3.0,29.4,0.9,1.6,"1 plate",300,"A","WAFCT 01_136 red native rice, hulled, boiled"],["rice_beans","Rice and beans, boiled","Rice & beans","Rice & grains",125,6.2,22.5,0.4,3.2,"1 plate",300,"A","WAFCT 03_143 cowpeas and rice"],["spaghetti","Spaghetti, boiled","Spag","Rice & grains",158,5.8,31.0,0.9,1.8,"1 plate",250,"A","USDA FoodData Central"],["jollof_spaghetti","Jollof spaghetti","Spag jollof","Rice & grains",210,4.3,23.8,10.4,1.8,"1 plate",250,"B","WAFCT 01_157 jollof spaghetti (Burkina recipe)"],["indomie","Instant noodles, cooked (incl. seasoning oil)","Indomie","Rice & grains",200,5.6,25.3,8.3,1.3,"1 pack cooked (70 g dry)",160,"A","WAFCT 01_103 Indomie, cooked"],["couscous","Couscous, cooked","Couscous","Rice & grains",112,3.8,23.0,0.2,1.4,"1 plate",250,"A","USDA FoodData Central"],["pap","Pap, plain (no milk/sugar)","Ogi, akamu, koko","Rice & grains",52,1.1,8.8,1.0,1.4,"1 bowl",300,"A","WAFCT 01_100 ogi, cooked"],["agidi","Agidi / eko (solid pap)","Eko, agidi","Rice & grains",60,0.7,14.0,0.3,0.4,"1 wrap",150,"C","Recipe estimate"],["custard","Custard, made with water","Custard","Rice & grains",45,0.1,11.0,0.1,0.1,"1 bowl",300,"C","Recipe estimate"],["oats","Oats, cooked with water","Quaker oats","Rice & grains",65,2.1,10.3,1.4,1.8,"1 bowl",250,"A","WAFCT 01_133 oat porridge"],["corn_boiled","Corn on the cob, boiled","Agbado","Rice & grains",96,3.4,21.0,1.5,2.4,"1 cob (kernels)",100,"A","USDA FoodData Central"],["corn_roasted","Corn, roasted","Roasted corn","Rice & grains",120,3.8,25.0,1.8,3.0,"1 cob (kernels)",100,"C","Recipe estimate"],["masa","Masa (fried rice cake)","Waina","Rice & grains",230,4.0,35.0,8.0,1.0,"1 piece",40,"C","Recipe estimate"],["bread_white","White bread / Agege bread","Bread","Rice & grains",271,9.5,51.0,2.7,2.5,"1 slice",35,"A","WAFCT 01_045 white bread/rolls"],["bread_wheat","Wheat bread","Brown bread","Rice & grains",232,11.1,37.6,2.8,6.4,"1 slice",35,"A","WAFCT 01_048 wholemeal bread"],["ukwa","Ukwa (breadfruit porridge)","Ukwa","Rice & grains",190,6.0,27.0,6.0,3.5,"1 plate",250,"C","Recipe estimate"],["yam_boiled","Yam, boiled","Ji, isu","Yam & plantain",136,1.9,28.7,0.2,6.0,"1 slice",100,"A","WAFCT 02_078 Nigerian yam, boiled"],["yam_fried","Yam, fried","Dundun","Yam & plantain",262,3.6,39.6,8.0,8.8,"1 slice",80,"A","WAFCT 02_082 yam, deep fried"],["yam_roasted","Yam, roasted","Boli yam","Yam & plantain",140,1.9,29.5,0.2,6.0,"1 slice",100,"B","WAFCT 02_078 adjusted"],["yam_porridge","Yam porridge","Asaro","Yam & plantain",140,1.8,22.0,5.0,2.8,"1 plate",300,"C","Recipe estimate"],["plantain_unripe_boiled","Unripe plantain, boiled","Boiled plantain","Yam & plantain",151,1.8,30.3,1.1,6.2,"1 finger",150,"A","WAFCT 02_065 unripe plantain, boiled"],["plantain_ripe_boiled","Ripe plantain, boiled","Boiled plantain","Yam & plantain",137,1.3,31.3,0.2,2.2,"1 finger",150,"A","WAFCT 02_058 ripe plantain, boiled"],["dodo","Dodo (fried ripe plantain)","Dodo","Yam & plantain",375,2.1,51.7,16.9,3.7,"side portion",100,"A","WAFCT 02_084 plantain, deep fried"],["boli","Boli (roasted plantain)","Boli","Yam & plantain",140,1.2,35.0,0.4,2.5,"1 finger",150,"C","Recipe estimate"],["plantain_porridge","Plantain porridge","Plantain pottage","Yam & plantain",120,2.5,20.0,4.0,2.5,"1 plate",300,"C","Recipe estimate"],["sweet_potato","Sweet potato, boiled","Sweet potato","Yam & plantain",96,1.5,20.5,0.2,3.0,"1 medium",150,"A","WAFCT 02_069 pale sweet potato, boiled"],["irish_potato","Irish potato, boiled","Potato","Yam & plantain",79,1.5,17.4,0.1,1.7,"1 medium",150,"A","WAFCT 02_068 potato, boiled"],["chips","Potato chips / fries","Chips","Yam & plantain",312,3.4,41.0,15.0,3.8,"1 portion",150,"A","USDA FoodData Central"],["cocoyam","Cocoyam / taro, boiled","Ede, koko","Yam & plantain",143,3.4,30.4,0.3,2.1,"1 portion",150,"A","WAFCT 02_054 cocoyam, boiled"],["abacha","Abacha (African salad)","Abacha","Yam & plantain",230,4.0,30.0,11.0,3.0,"1 plate",250,"C","Recipe estimate"],["garri_soaked","Garri, soaked in water (no sugar)","Drinking garri","Yam & plantain",88,0.3,20.7,0.1,1.3,"1 bowl",400,"B","WAFCT 02_039 gari x 25%"],["garri_dry","Garri, dry","Garri","Yam & plantain",351,1.2,82.9,0.5,5.0,"1 cup",120,"A","WAFCT 02_039 white gari"],["beans_boiled","Beans, plain boiled","Ewa","Beans & legumes",122,8.9,17.6,0.7,4.8,"1 plate",250,"A","WAFCT 03_028 brown cowpea, boiled"],["beans_porridge","Beans porridge (with palm oil)","Ewa riro","Beans & legumes",165,7.5,20.0,6.0,5.5,"1 plate",250,"C","Recipe estimate"],["agoyin_sauce","Agoyin sauce","Ewa agoyin sauce","Beans & legumes",520,1.0,8.0,55.0,1.5,"2 tbsp",30,"C","Recipe estimate"],["moi_moi","Moi moi","Moin moin, olele","Beans & legumes",175,9.0,15.0,9.0,3.5,"1 wrap/tin",150,"C","Recipe estimate"],["akara","Akara (bean fritter)","Akara, kosai","Beans & legumes",265,11.0,19.0,16.0,4.5,"1 ball",30,"C","Recipe estimate"],["ekuru","Ekuru (white moi moi)","Ekuru","Beans & legumes",146,10.1,22.2,0.6,5.7,"1 wrap",150,"B","WAFCT 03_152 steamed cowpea paste (Burkina)"],["gbegiri","Gbegiri (bean soup)","Gbegiri","Beans & legumes",90,5.0,10.0,3.5,2.5,"1 ladle",120,"C","Recipe estimate"],["okpa","Okpa (bambara nut pudding)","Okpa","Beans & legumes",210,9.5,27.0,7.0,4.0,"1 wrap",200,"C","Recipe estimate"],["groundnut_roasted","Groundnut, roasted","Epa, gyada","Beans & legumes",585,24.0,21.0,49.6,8.0,"1 handful",30,"A","USDA FoodData Central"],["groundnut_boiled","Groundnut, boiled","Boiled epa","Beans & legumes",320,13.5,21.0,22.0,8.8,"1 handful",50,"A","USDA FoodData Central"],["kuli_kuli","Kuli kuli","Kuli kuli","Beans & legumes",520,31.0,23.0,35.0,6.0,"1 stick",30,"C","Recipe estimate"],["ugba","Ugba (fermented oil bean)","Ugba, ukpaka","Beans & legumes",250,15.0,7.0,18.0,4.0,"1 tbsp",20,"C","Recipe estimate"],["tiger_nut_drink","Tiger nut drink","Kunun aya","Beans & legumes",70,0.6,12.0,2.5,0.5,"1 bottle",350,"C","Recipe estimate"],["egusi","Egusi soup","Egusi, miyan agushi","Soups & stews",210,7.5,4.0,18.0,2.0,"1 bowl",250,"C","Recipe estimate"],["ogbono","Ogbono soup","Draw soup, apon","Soups & stews",150,4.0,3.5,13.5,2.0,"1 bowl",250,"C","Recipe estimate"],["okra","Okra soup","Ila, okwuru","Soups & stews",80,2.5,5.0,5.5,2.0,"1 bowl",250,"C","Recipe estimate"],["efo_riro","Efo riro","Efo","Soups & stews",140,5.0,4.0,11.5,2.5,"1 bowl",250,"C","Recipe estimate"],["edikang_ikong","Edikang ikong","Edikang ikong","Soups & stews",135,6.0,4.0,10.5,3.0,"1 bowl",250,"C","Recipe estimate"],["afang","Afang soup","Afang","Soups & stews",140,6.0,4.5,11.0,3.0,"1 bowl",250,"C","Recipe estimate"],["oha","Oha soup","Ofe oha","Soups & stews",130,5.0,6.5,9.5,2.0,"1 bowl",250,"C","Recipe estimate"],["bitterleaf","Bitterleaf soup","Ofe onugbu","Soups & stews",122,7.0,5.6,8.0,1.7,"1 bowl",250,"A","Omah et al. lab study"],["banga","Banga soup","Ofe akwu, palm nut soup","Soups & stews",230,4.0,4.0,22.0,2.0,"1 bowl",250,"C","Recipe estimate"],["owo","Owo soup","Owo","Soups & stews",150,2.5,9.0,11.5,0.5,"1 bowl",250,"C","Recipe estimate"],["groundnut_soup","Groundnut soup","Miyan gyada","Soups & stews",190,7.0,5.0,16.0,2.0,"1 bowl",250,"C","Recipe estimate"],["pepper_soup","Pepper soup (broth only)","Pepper soup","Soups & stews",30,3.0,1.5,1.5,0.3,"1 bowl",300,"C","Recipe estimate"],["nsala","White soup","Ofe nsala","Soups & stews",70,5.0,5.0,3.0,0.5,"1 bowl",250,"C","Recipe estimate"],["miyan_kuka","Miyan kuka","Kuka","Soups & stews",70,3.0,6.0,4.0,2.5,"1 bowl",250,"C","Recipe estimate"],["miyan_taushe","Miyan taushe (pumpkin)","Taushe","Soups & stews",120,4.5,6.0,9.0,1.5,"1 bowl",250,"C","Recipe estimate"],["ewedu","Ewedu","Ewedu","Soups & stews",30,2.0,3.5,1.0,1.5,"1 ladle",120,"C","Recipe estimate"],["tomato_stew","Tomato stew (red stew)","Obe ata, stew","Soups & stews",160,1.5,7.0,14.0,1.5,"1 serving spoon",45,"C","Recipe estimate"],["ayamase","Ayamase / ofada stew","Designer stew","Soups & stews",260,3.0,5.0,25.5,1.5,"1 serving spoon",45,"C","Recipe estimate"],["garden_egg_sauce","Garden egg sauce","Garden egg stew","Soups & stews",130,3.0,6.0,10.5,2.5,"1 serving spoon",60,"C","Recipe estimate"],["gizdodo","Gizdodo","Gizdodo","Soups & stews",220,8.0,22.0,11.0,2.0,"1 plate",200,"C","Recipe estimate"],["beef_boiled","Beef, boiled/stewed","Eran, beef","Proteins",185,31.7,0.0,6.4,0.0,"1 piece",50,"A","WAFCT 07_085 beef, lean, stewed"],["beef_fried","Beef, fried","Fried meat","Proteins",260,28.0,0.0,16.5,0.0,"1 piece",50,"B","Calculated from reference values"],["goat","Goat meat, cooked","Eran ewure, ofe ewu","Proteins",202,33.6,0.0,7.5,0.0,"1 piece",50,"A","WAFCT 07_115 goat, lean, stewed"],["chicken","Chicken with skin, stewed/fried","Adiye","Proteins",331,23.8,0.0,26.2,0.0,"1 thigh/drumstick (edible)",100,"A","WAFCT 07_103 chicken dark meat with skin, stewed"],["chicken_breast","Chicken breast, skinless, grilled","Chicken breast","Proteins",149,29.5,0.0,3.5,0.0,"1 breast",150,"A","WAFCT 07_035 chicken light meat, grilled"],["turkey","Turkey with skin, fried","Turkey","Proteins",230,27.0,0.0,13.5,0.0,"1 piece",100,"B","Calculated from reference values"],["gizzard","Chicken gizzard, cooked","Gizzard","Proteins",154,30.0,0.0,2.7,0.0,"5 pieces",60,"A","USDA FoodData Central"],["shaki","Tripe, cooked","Shaki","Proteins",118,16.8,0.0,5.6,0.0,"1 piece",40,"A","WAFCT 07_092 beef tripe, stewed"],["ponmo","Cow skin, cooked","Ponmo, kpomo","Proteins",110,25.0,0.0,1.2,0.0,"1 piece",50,"C","Recipe estimate"],["liver","Beef liver, cooked","Liver","Proteins",171,25.7,4.5,5.6,0.0,"1 piece",50,"A","WAFCT 07_089 beef liver, stewed"],["assorted","Assorted offal","Orisirisi","Proteins",150,20.0,0.0,7.5,0.0,"1 piece",50,"C","Recipe estimate"],["cow_foot","Cow foot, cooked","Bokoto, nkwobi base","Proteins",200,20.0,0.0,13.0,0.0,"1 piece",80,"C","Recipe estimate"],["snail","Snail, cooked","Igbin","Proteins",138,25.2,8.3,0.5,0.0,"1 snail",40,"A","WAFCT 07_084 snail, cooked"],["suya","Suya (beef)","Suya, tsire","Proteins",260,30.0,5.0,13.0,1.0,"1 stick",30,"C","Recipe estimate"],["kilishi","Kilishi","Kilishi","Proteins",445,22.0,42.0,21.0,2.0,"1 piece",20,"A","FJS lab study"],["mackerel","Mackerel (Titus), fried/stewed","Titus, eja kika","Proteins",262,24.0,0.0,18.0,0.0,"1 cut",70,"A","USDA FoodData Central"],["croaker","Croaker, fried","Croaker","Proteins",192,19.0,2.0,12.0,0.0,"1 fish",120,"C","Recipe estimate"],["catfish","Catfish, cooked","Point & kill","Proteins",124,21.5,0.0,4.2,0.0,"1 cut",120,"A","WAFCT 09_082 African catfish, boiled"],["tilapia","Tilapia, grilled","Tilapia","Proteins",112,23.6,0.0,1.9,0.0,"1 fish (edible)",150,"A","WAFCT 09_043 tilapia, grilled"],["smoked_fish","Smoked/dried fish","Eja gbigbe","Proteins",350,60.0,0.0,12.0,0.0,"1 piece",30,"C","Recipe estimate"],["stockfish","Stockfish, dried","Okporoko","Proteins",290,62.8,0.0,2.4,0.0,"1 piece (dry wt)",20,"A","USDA FoodData Central"],["crayfish","Crayfish, dried ground","Crayfish","Proteins",322,63.1,7.9,4.2,0.0,"1 tbsp",8,"A","WAFCT 09_057 dried crayfish"],["periwinkle","Periwinkle, cooked","Isam","Proteins",90,16.0,3.0,1.5,0.0,"1 handful",30,"C","Recipe estimate"],["prawns","Prawns/shrimp, cooked","Prawns","Proteins",123,26.7,0.3,1.7,0.0,"5 pieces",50,"A","WAFCT 09_104 shrimp, boiled"],["egg_boiled","Egg, boiled","Eyin","Proteins",148,12.7,0.8,10.4,0.0,"1 egg",50,"A","WAFCT 08_010 local egg, boiled"],["egg_fried","Egg, fried","Fried egg","Proteins",197,13.6,2.0,14.9,0.0,"1 egg",50,"A","WAFCT 08_003 egg, fried"],["corned_beef","Corned beef, canned","Corned beef","Proteins",208,17.2,3.6,13.8,0.0,"1/4 tin",85,"A","WAFCT 07_025 corned beef"],["sardine","Sardine in oil, drained","Sardine","Proteins",239,24.8,0.0,15.5,0.0,"1 tin",90,"A","WAFCT 09_037 sardine in oil"],["wara","Wara (local soft cheese)","Wara, wagashi","Proteins",219,15.5,3.8,15.7,0.0,"1 piece",50,"B","WAFCT 10_028 fresh curd cheese"],["evap_milk","Evaporated milk (Peak liquid)","Peak milk","Dairy & drinks",157,7.4,12.6,8.6,0.0,"1 tin",160,"A","WAFCT 10_016 evaporated milk"],["milk_powder","Full-cream milk powder","Peak/Dano powder","Dairy & drinks",493,25.8,37.3,26.8,0.0,"1 tbsp",8,"A","WAFCT 10_002 whole milk powder"],["milo","Chocolate malt powder","Milo, Bournvita","Dairy & drinks",400,8.0,76.0,7.0,4.0,"1 tbsp",10,"B","Calculated from reference values"],["fura_nono","Fura de nono","Fura","Dairy & drinks",108,2.6,19.4,2.0,1.3,"1 calabash cup",400,"B","WAFCT 01_176 fura with milk (Burkina)"],["yoghurt","Sweetened yoghurt","Hollandia","Dairy & drinks",83,3.5,14.0,1.4,0.2,"1 bottle",315,"A","WAFCT 10_026 sweetened yoghurt"],["zobo","Zobo, sweetened","Zobo","Dairy & drinks",40,0.0,10.0,0.0,0.0,"1 bottle",350,"C","Recipe estimate"],["soft_drink","Soft drink","Coke, Fanta, Pepsi, Bigi","Dairy & drinks",42,0.0,10.6,0.0,0.0,"1 bottle",350,"A","USDA FoodData Central"],["malt","Malt drink","Maltina, Malta","Dairy & drinks",60,0.4,14.0,0.0,0.0,"1 can",330,"B","Calculated from reference values"],["kunu","Kunu zaki","Kunu","Dairy & drinks",55,0.8,12.0,0.3,0.4,"1 bottle",350,"C","Recipe estimate"],["sugar","Sugar","Sugar","Dairy & drinks",400,0.0,100.0,0.0,0.0,"1 tsp",5,"A","USDA FoodData Central"],["puff_puff","Puff puff","Puff puff","Snacks",330,5.5,45.0,14.5,1.5,"1 ball",30,"C","Recipe estimate"],["chin_chin","Chin chin","Chin chin","Snacks",483,8.2,66.0,23.0,2.5,"1 handful",40,"A","Pack label"],["meat_pie","Meat pie","Meat pie","Snacks",290,7.5,30.0,15.5,1.5,"1 pie",100,"C","Recipe estimate"],["sausage_roll","Sausage roll","Gala, sausage roll","Snacks",310,8.0,30.0,17.5,1.0,"1 roll",60,"C","Recipe estimate"],["egg_roll","Egg roll","Egg roll","Snacks",280,8.5,26.0,15.5,1.0,"1 roll",120,"C","Recipe estimate"],["doughnut","Doughnut","Doughnut","Snacks",420,6.0,49.0,22.5,1.5,"1 piece",60,"C","Recipe estimate"],["buns","Buns","Buns","Snacks",380,6.5,48.0,18.0,1.5,"1 piece",60,"C","Recipe estimate"],["shawarma","Chicken shawarma","Shawarma","Snacks",230,10.0,22.0,11.5,1.5,"1 wrap",350,"C","Recipe estimate"],["samosa","Samosa / spring roll","Small chops","Snacks",290,7.0,30.0,16.0,2.0,"1 piece",40,"C","Recipe estimate"],["plantain_chips","Plantain chips","Ipekere","Snacks",520,2.3,60.0,30.0,3.5,"1 small pack",50,"C","Recipe estimate"],["popcorn","Popcorn (street)","Popcorn","Snacks",450,9.0,58.0,20.0,10.0,"1 pack",40,"C","Recipe estimate"],["ojojo","Ojojo (water yam fritter)","Ojojo","Snacks",280,2.5,32.0,16.0,2.5,"1 piece",30,"C","Recipe estimate"],["coconut","Coconut, fresh","Agbon","Snacks",383,3.3,5.0,36.8,9.5,"1 piece",40,"A","WAFCT 06_002 fresh coconut"],["garden_egg","Garden egg, raw","Igba, anara","Fruits & veg",32,1.3,3.9,0.4,4.0,"1 piece",60,"A","WAFCT 04_074 native eggplant"],["orange","Orange","Orange","Fruits & veg",44,0.7,8.7,0.4,1.7,"1 medium",130,"A","WAFCT 05_016 orange"],["banana","Banana","Ogede wewe","Fruits & veg",89,1.3,19.2,0.2,2.7,"1 medium",120,"A","WAFCT 05_028 banana"],["pawpaw","Pawpaw","Pawpaw","Fruits & veg",59,0.4,13.0,0.1,2.1,"1 slice",150,"A","WAFCT 05_017 papaya"],["pineapple","Pineapple","Pineapple","Fruits & veg",53,0.4,11.4,0.2,1.8,"1 slice",100,"A","WAFCT 05_018 pineapple"],["watermelon","Watermelon","Watermelon","Fruits & veg",25,0.5,5.0,0.1,0.9,"1 slice",250,"A","WAFCT 05_022 watermelon"],["mango","Mango","Mango","Fruits & veg",70,0.6,15.3,0.2,1.8,"1 medium",200,"A","WAFCT 05_015 mango"],["avocado","Avocado","Pear","Fruits & veg",156,1.6,2.1,14.8,4.0,"1/2 fruit",100,"A","WAFCT 05_002 avocado"],["agbalumo","African star apple","Agbalumo, udara","Fruits & veg",132,3.4,16.4,5.2,3.1,"1 fruit",60,"A","WAFCT 05_053 African star apple"],["palm_oil","Palm oil","Epo pupa","Oils & extras",898,0.0,0.0,99.8,0.0,"1 tbsp",14,"A","WAFCT 11_004 red palm oil"],["veg_oil","Vegetable oil","Groundnut/veg oil","Oils & extras",900,0.0,0.0,100.0,0.0,"1 tbsp",14,"A","WAFCT 11_010 vegetable oil"],["margarine","Margarine","Blue Band","Oils & extras",728,0.4,0.8,80.4,0.0,"1 tsp",5,"A","WAFCT 11_029 margarine (Nigeria)"],["peanut_butter","Groundnut paste / peanut butter","Peanut butter","Oils & extras",605,23.9,11.0,49.9,8.3,"1 tbsp",16,"A","WAFCT 06_026 groundnut paste"],["mayonnaise","Mayonnaise","Mayo","Oils & extras",680,1.0,1.0,75.0,0.0,"1 tbsp",15,"A","USDA FoodData Central"],["honey","Honey","Oyin","Oils & extras",304,0.3,82.0,0.0,0.2,"1 tbsp",21,"A","USDA FoodData Central"],["burger","Beef burger","Burger","Fast food",255,13,30,9.5,1.4,"1 burger",200,"B","USDA FoodData Central"],["cheeseburger","Cheeseburger","Cheese burger","Fast food",263,14,26,12,1.2,"1 burger",220,"B","USDA FoodData Central"],["fried_chicken","Fried chicken, breaded","Chicken Republic-style, KFC-style","Fast food",280,20,9,18,0.5,"1 piece (edible)",110,"B","USDA FoodData Central"],["pizza_pepperoni","Pizza, pepperoni or meat","Pizza","Fast food",298,12.6,33,13,2.3,"1 slice",110,"B","USDA FoodData Central"],["pizza_cheese","Pizza, cheese","Pizza","Fast food",266,11.4,33,9.7,2.3,"1 slice",107,"B","USDA FoodData Central"],["hot_dog","Hot dog with bun","Hot dog","Fast food",260,10,22,14.5,0.8,"1 hot dog",100,"B","USDA FoodData Central"],["coleslaw","Coleslaw","Salad","Fast food",150,1,13,10.5,1.8,"1 side",100,"B","USDA FoodData Central"],["sandwich_egg","Egg sandwich","Egg bread","Fast food",230,10,25,10,1.5,"1 sandwich",150,"C","Recipe estimate"],["sandwich_chicken","Chicken sandwich","Chicken sandwich","Fast food",220,14,22,8,1.5,"1 sandwich",180,"C","Recipe estimate"],["sandwich_club","Club sandwich","Club sandwich","Fast food",240,12,20,12.5,1.5,"1 sandwich",250,"C","Recipe estimate"],["sandwich_tuna","Tuna or sardine sandwich","Sardine bread","Fast food",230,12,22,10.5,1.5,"1 sandwich",150,"C","Recipe estimate"],["pancakes","Pancakes","Pancake","Fast food",227,6.4,28,9.7,1.0,"2 pancakes",100,"B","USDA FoodData Central"],["sausages","Sausages (chicken or beef)","Frankfurter, hot dog sausage","Fast food",250,12,3.5,21,0,"2 sausages",80,"B","USDA FoodData Central"],["cornflakes","Cornflakes, dry","Nasco, Kellogg's","Rice & grains",375,7,84,0.9,3,"1 bowl, dry",40,"B","Pack labels (typical)"],["golden_morn","Golden Morn, dry","Golden Morn","Rice & grains",385,10.5,69,6,4,"1 serving, dry",50,"B","Retail label listings (361–400 kcal)"],["fresh_milk","Fresh milk, full cream","Milk","Dairy & drinks",64,3.3,5.1,3.4,0,"1 cup",250,"A","WAFCT 10_001 whole milk"],["tea_milk","Tea with milk and sugar","Lipton with Peak","Dairy & drinks",27,0.6,5,0.6,0,"1 cup",250,"C","Recipe estimate"],["juice","Fruit juice, packaged","Chivita, Five Alive","Dairy & drinks",46,0.5,10.5,0.1,0.2,"1 glass",250,"B","USDA FoodData Central"],["energy_drink","Energy drink","Fearless, Power Horse, Monster","Dairy & drinks",48,0,12,0,0,"1 bottle",400,"C","Pack labels (typical)"],["beer","Beer, lager","Star, Gulder, Trophy","Dairy & drinks",43,0.5,3.6,0,0,"1 bottle",600,"B","USDA FoodData Central · most of its calories come from alcohol"],["digestive","Digestive biscuits","McVitie's","Biscuits & sweets",485,7.1,62.6,21,3.6,"3 biscuits",45,"B","Pack label (McVitie's)"],["cream_crackers","Cream crackers","Jacob's, Beloxxi","Biscuits & sweets",431,9.9,67.6,12.5,3.8,"4 crackers",32,"B","Pack labels (typical)"],["cabin_biscuit","Sweet tea biscuits","Cabin-style, Oxford","Biscuits & sweets",450,7,70,15.5,2,"1 small pack",40,"C","Estimate from similar biscuits"],["cream_biscuits","Cream-filled biscuits","Bourbon, Oreo-style","Biscuits & sweets",470,5,69,19.5,2.5,"4 biscuits",44,"B","Pack labels (typical)"],["cookies","Cookies","Chocolate chip cookies","Biscuits & sweets",488,5.4,64,24,2.4,"2 cookies",30,"B","USDA FoodData Central"],["wafers","Cream wafers","Wafers","Biscuits & sweets",510,5,64,26,1.5,"1 pack",40,"C","Pack labels (typical)"],["chocolate","Milk chocolate","Chocolate bar","Biscuits & sweets",535,7.6,59,30,3.4,"1 bar",40,"A","USDA FoodData Central"],["cake","Cake (sponge or pound)","Cake","Biscuits & sweets",389,5.5,49,19.9,0.8,"1 slice",80,"B","USDA FoodData Central"],["cupcake","Cupcake with icing","Cupcake","Biscuits & sweets",380,4,55,16,1,"1 cupcake",70,"B","USDA FoodData Central"],["ice_cream","Ice cream, vanilla","Ice cream, FanIce-style","Biscuits & sweets",207,3.5,23.6,11,0.7,"1 cup",100,"A","USDA FoodData Central"],["sweets","Sweets (hard candy)","Sweet, toffee","Biscuits & sweets",394,0,98,0.2,0,"3 sweets",15,"A","USDA FoodData Central"],["crisps","Potato crisps","Pringles, chips","Biscuits & sweets",536,5,53,34,3,"1 small can",40,"B","Pack labels (typical)"],["cashew","Cashew nuts, roasted","Cashew","Snacks",574,15,30,46,3,"1 handful",30,"A","USDA FoodData Central"]];
+const FOOD = {};
+FOODS.forEach(r => { FOOD[r[0]] = { id: r[0], name: r[1], aka: r[2], cat: r[3], kcal: r[4], p: r[5], c: r[6], f: r[7], fib: r[8], portion: r[9], pg: r[10], conf: r[11], src: r[12] }; });
+const CATS = ["Swallow", "Soups & stews", "Proteins", "Rice & grains", "Yam & plantain", "Beans & legumes", "Snacks", "Fast food", "Biscuits & sweets", "Dairy & drinks", "Fruits & veg", "Oils & extras"];
+const OILY_IDS = new Set(["jollof_rice", "fried_rice", "coconut_rice", "jollof_spaghetti", "yam_porridge", "plantain_porridge", "beans_porridge", "abacha", "ukwa", "moi_moi"]);
+const NOT_OILY = new Set(["pepper_soup", "ewedu", "nsala", "gizdodo"]);
+const OIL = { light: 0.7, normal: 1, heavy: 1.3 };
+const SLOTS = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snacks"]];
+const ACT = [
+  { k: 1.2, label: "Sitting most of the day", sub: "Desk work or study, little walking" },
+  { k: 1.375, label: "Lightly active", sub: "Exercise 1–3 days a week" },
+  { k: 1.55, label: "Moderately active", sub: "Exercise 3–5 days a week" },
+  { k: 1.725, label: "Very active", sub: "Exercise 6–7 days a week" },
+  { k: 1.9, label: "Physical job and training", sub: "On your feet all day, plus workouts" }
+];
+const GOALS = { gain: "Gain weight", lose: "Lose weight", maintain: "Stay the same" };
+
+/* Default prices: naira per typical portion, cooked at home (soups exclude meat/fish).
+   Anchored on NBS Mar–Apr 2026 (garri ₦810/kg, brown beans ₦1,340/kg, eggs ≈ ₦205 each) and 2026 market surveys.
+   Users can set their own local price on any food. */
+const PRICE = {
+  eba:100, pounded_yam:400, amala:220, amala_lafun:150, fufu:150, semo:150, wheat_swallow:250, starch_usi:200, tuwo_shinkafa:200, tuwo_masara:120, plantain_swallow:350, oat_swallow:450,
+  white_rice:200, jollof_rice:500, fried_rice:700, coconut_rice:600, ofada_rice:400, rice_beans:250, spaghetti:230, jollof_spaghetti:450, indomie:350, couscous:500, pap:150, agidi:150, custard:250, oats:250, corn_boiled:300, corn_roasted:300, masa:100, bread_white:80, bread_wheat:100, ukwa:900,
+  yam_boiled:120, yam_fried:150, yam_roasted:150, yam_porridge:600, plantain_unripe_boiled:400, plantain_ripe_boiled:400, dodo:350, boli:400, plantain_porridge:700, sweet_potato:250, irish_potato:300, chips:800, cocoyam:250, abacha:800, garri_soaked:90, garri_dry:100,
+  beans_boiled:130, beans_porridge:300, agoyin_sauce:150, moi_moi:300, akara:70, ekuru:250, gbegiri:150, okpa:500, groundnut_roasted:100, groundnut_boiled:150, kuli_kuli:100, ugba:100, tiger_nut_drink:700,
+  egusi:700, ogbono:700, okra:400, efo_riro:600, edikang_ikong:900, afang:800, oha:700, bitterleaf:600, banga:700, owo:500, groundnut_soup:600, pepper_soup:300, nsala:500, miyan_kuka:300, miyan_taushe:400, ewedu:100, tomato_stew:150, ayamase:250, garden_egg_sauce:200, gizdodo:1200,
+  beef_boiled:410, beef_fried:430, goat:520, chicken:700, chicken_breast:1000, turkey:1100, gizzard:400, shaki:250, ponmo:200, liver:350, assorted:350, cow_foot:500, snail:800, suya:300, kilishi:500, mackerel:450, croaker:700, catfish:600, tilapia:900, smoked_fish:400, stockfish:500, crayfish:100, periwinkle:200, prawns:600, egg_boiled:210, egg_fried:240, corned_beef:900, sardine:1200, wara:300,
+  evap_milk:800, milk_powder:90, milo:80, fura_nono:500, yoghurt:1200, zobo:300, soft_drink:400, malt:600, kunu:300, sugar:10,
+  puff_puff:50, chin_chin:200, meat_pie:700, sausage_roll:500, egg_roll:600, doughnut:400, buns:150, shawarma:3500, samosa:200, plantain_chips:300, popcorn:300, ojojo:100, coconut:150,
+  garden_egg:50, orange:150, banana:100, pawpaw:200, pineapple:200, watermelon:300, mango:200, avocado:500, agbalumo:100,
+  palm_oil:30, veg_oil:40, margarine:40, peanut_butter:200, mayonnaise:150, honey:200
+};
+Object.assign(PRICE, {"burger": 4000, "cheeseburger": 4500, "fried_chicken": 2000, "pizza_pepperoni": 1500, "pizza_cheese": 1300, "hot_dog": 1500, "coleslaw": 700, "sandwich_egg": 1000, "sandwich_chicken": 2500, "sandwich_club": 4000, "sandwich_tuna": 1500, "pancakes": 500, "sausages": 600, "cornflakes": 350, "golden_morn": 250, "fresh_milk": 600, "tea_milk": 150, "juice": 500, "energy_drink": 700, "beer": 1200, "digestive": 200, "cream_crackers": 150, "cabin_biscuit": 150, "cream_biscuits": 200, "cookies": 300, "wafers": 200, "chocolate": 1000, "cake": 800, "cupcake": 700, "ice_cream": 1000, "sweets": 50, "crisps": 1500, "cashew": 500});
+function priceBasisG(f) { return f.cat === "Swallow" && !f.custom ? 300 : f.pg; }
+function portionPrice(f) { const own = state.prices && state.prices[f.id]; return own != null ? own : (f.custom ? (f.price || 0) : (PRICE[f.id] || 0)); }
+function costOf(f, g) { return portionPrice(f) * g / priceBasisG(f); }
+function naira(n) { return "₦" + fmt(n); }
+
+/* Ready-made Nigerian combos for suggestions: [id, name, slots, goals, [[foodId, grams], ...]] */
+const COMBOS = [
+  ["b1", "Pap, akara and milk", "b", "all", [["pap", 300], ["akara", 90], ["evap_milk", 40]]],
+  ["b2", "Bread and fried eggs", "b", "gain maintain", [["bread_white", 105], ["egg_fried", 100]]],
+  ["b3", "Boiled eggs and sweet potato", "b", "lose maintain", [["egg_boiled", 100], ["sweet_potato", 150]]],
+  ["b4", "Oats with milk and banana", "b", "all", [["oats", 250], ["evap_milk", 40], ["banana", 120]]],
+  ["b5", "Moi moi and pap", "b", "all", [["moi_moi", 150], ["pap", 300]]],
+  ["b6", "Boiled yam, egg and stew", "b", "gain maintain", [["yam_boiled", 200], ["egg_fried", 100], ["tomato_stew", 45]]],
+  ["b7", "Drinking garri with milk and groundnut", "b s", "gain", [["garri_dry", 120], ["evap_milk", 80], ["groundnut_roasted", 50], ["sugar", 10]]],
+  ["b8", "Wheat bread, peanut butter and banana", "b s", "gain", [["bread_wheat", 70], ["peanut_butter", 32], ["banana", 120]]],
+  ["b9", "Custard with milk and boiled eggs", "b", "all", [["custard", 300], ["evap_milk", 40], ["egg_boiled", 100]]],
+  ["m1", "Eba, egusi and beef", "m", "all", [["eba", 300], ["egusi", 250], ["beef_boiled", 100]]],
+  ["m2", "Pounded yam, efo riro and goat meat", "m", "all", [["pounded_yam", 300], ["efo_riro", 250], ["goat", 100]]],
+  ["m3", "Catfish pepper soup", "m", "lose maintain", [["pepper_soup", 300], ["catfish", 240]]],
+  ["m4", "Semo, okra soup and fish", "m", "lose maintain", [["semo", 200], ["okra", 250], ["catfish", 120]]],
+  ["m5", "Jollof rice, chicken and dodo", "m", "gain maintain", [["jollof_rice", 300], ["chicken", 100], ["dodo", 100]]],
+  ["m6", "Rice, stew and boiled eggs", "m", "all", [["white_rice", 300], ["tomato_stew", 90], ["egg_boiled", 100]]],
+  ["m7", "Beans and dodo", "m", "gain maintain", [["beans_porridge", 250], ["dodo", 100]]],
+  ["m8", "Beans with garri", "m", "gain", [["beans_porridge", 250], ["garri_dry", 60], ["sugar", 10]]],
+  ["m9", "Amala, ewedu, gbegiri and beef", "m", "all", [["amala", 300], ["ewedu", 120], ["gbegiri", 120], ["beef_boiled", 100]]],
+  ["m10", "Yam porridge and Titus", "m", "all", [["yam_porridge", 300], ["mackerel", 70]]],
+  ["m11", "Jollof spaghetti and chicken", "m", "gain", [["jollof_spaghetti", 250], ["chicken", 100]]],
+  ["m12", "Indomie and fried eggs", "m s", "gain", [["indomie", 160], ["egg_fried", 100]]],
+  ["m13", "Grilled chicken and boiled plantain", "m", "lose maintain", [["chicken_breast", 150], ["plantain_unripe_boiled", 150], ["tomato_stew", 45]]],
+  ["m14", "Fufu and bitterleaf soup with stockfish", "m", "all", [["fufu", 300], ["bitterleaf", 250], ["stockfish", 20]]],
+  ["m15", "Starch, banga and fish", "m", "gain maintain", [["starch_usi", 300], ["banga", 250], ["catfish", 120]]],
+  ["m16", "Ofada rice, ayamase and assorted", "m", "gain", [["ofada_rice", 300], ["ayamase", 90], ["assorted", 100]]],
+  ["m17", "Rice and beans with Titus stew", "m", "all", [["rice_beans", 300], ["tomato_stew", 90], ["mackerel", 70]]],
+  ["m18", "Moi moi, boiled egg and garden eggs", "m s", "lose", [["moi_moi", 150], ["egg_boiled", 50], ["garden_egg", 120]]],
+  ["m19", "Wheat, edikang ikong and fish", "m", "lose maintain", [["wheat_swallow", 250], ["edikang_ikong", 250], ["mackerel", 70]]],
+  ["m20", "Tuwo masara, miyan kuka and beef", "m", "all", [["tuwo_masara", 300], ["miyan_kuka", 250], ["beef_boiled", 50]]],
+  ["m21", "Abacha and fish", "m", "gain maintain", [["abacha", 250], ["mackerel", 70]]],
+  ["m22", "Eba, ogbono and assorted", "m", "gain", [["eba", 300], ["ogbono", 250], ["assorted", 100]]],
+  ["m23", "Boiled plantain, eggs and stew", "m", "lose maintain", [["plantain_unripe_boiled", 300], ["tomato_stew", 45], ["egg_boiled", 100]]],
+  ["m24", "Owo soup, starch and beef", "m", "all", [["starch_usi", 300], ["owo", 250], ["beef_boiled", 100]]],
+  ["s1", "Groundnut and banana", "s", "all", [["groundnut_roasted", 30], ["banana", 120]]],
+  ["s2", "Two boiled eggs", "s", "lose maintain", [["egg_boiled", 100]]],
+  ["s3", "Yoghurt and banana", "s", "gain", [["yoghurt", 315], ["banana", 120]]],
+  ["s4", "Roasted corn and coconut", "s", "all", [["corn_roasted", 100], ["coconut", 40]]],
+  ["s5", "Boli and groundnut", "s", "all", [["boli", 150], ["groundnut_roasted", 30]]],
+  ["s6", "Garden eggs and groundnut paste", "s", "lose maintain", [["garden_egg", 120], ["peanut_butter", 16]]],
+  ["s7", "Pawpaw and orange", "s", "lose maintain", [["pawpaw", 150], ["orange", 130]]],
+  ["s8", "Milo with milk", "s b", "gain", [["milo", 20], ["evap_milk", 80], ["sugar", 5]]],
+  ["s9", "Suya (3 sticks)", "s", "all", [["suya", 90]]],
+  ["s10", "Moi moi", "s", "all", [["moi_moi", 150]]],
+  ["b10", "Cornflakes with milk", "b", "all", [["cornflakes", 40], ["fresh_milk", 250]]],
+  ["b11", "Golden Morn with milk", "b", "all", [["golden_morn", 50], ["evap_milk", 40], ["sugar", 5]]],
+  ["b12", "Tea, bread and fried egg", "b", "all", [["tea_milk", 250], ["bread_white", 70], ["egg_fried", 50]]],
+  ["s11", "Egg sandwich", "s b", "gain maintain", [["sandwich_egg", 150]]]
+].map(([id, name, slots, goals, items]) => ({ id, name, slots: slots.split(" "), goals: goals === "all" ? ["gain", "lose", "maintain"] : goals.split(" "), items }));
+const SLOT_CODE = { breakfast: "b", lunch: "m", dinner: "m", snack: "s" };
+let suggestSkip = 0;
+function comboAt(c, s) {
+  const items = c.items.map(([fid, g]) => ({ fid, g: Math.max(5, Math.round(g * s / 5) * 5), oil: "normal" }));
+  const tot = items.reduce((a, i) => { const f = FOOD[i.fid], m = calc(f, i.g, "normal"); return { kcal: a.kcal + m.kcal, p: a.p + m.p, cost: a.cost + costOf(f, i.g) }; }, { kcal: 0, p: 0, cost: 0 });
+  return Object.assign({ items }, tot);
+}
+function suggestFor(slot) {
+  const p = state.profile, t = targets(), tot = dayTotals(viewDate), d = getDay(viewDate);
+  const leftK = t.cal - tot.kcal, leftP = Math.max(0, t.protein - tot.p);
+  const spent = d && d.items ? d.items.reduce((a, i) => a + (i.cost || 0), 0) : 0;
+  const leftB = p.budget ? p.budget - spent : Infinity;
+  const order = ["breakfast", "lunch", "dinner"], si = order.indexOf(slot);
+  const mealsLeft = slot === "snack" ? 1 : Math.max(1, 3 - si);
+  const mealCap = p.goal === "gain" ? 1500 : p.goal === "lose" ? 800 : 1100;
+  const aim = slot === "snack" ? Math.max(150, Math.min(leftK, p.goal === "gain" ? 700 : 300)) : Math.min(mealCap, Math.max(250, leftK / mealsLeft));
+  const shareB = slot === "snack" ? leftB * 0.25 : leftB / mealsLeft;
+  const code = SLOT_CODE[slot];
+  const scales = p.goal === "lose" ? [0.5, 0.75, 1, 1.25] : [0.75, 1, 1.25, 1.5];
+  const out = [];
+  for (const c of COMBOS) {
+    if (!c.goals.includes(p.goal) || !c.slots.includes(code)) continue;
+    let best = null;
+    for (const s of scales) {
+      const r = comboAt(c, s);
+      if (r.cost > leftB) continue;
+      const fit = Math.abs(r.kcal - aim) / aim;
+      const protFrac = r.p * 4 / Math.max(1, r.kcal);
+      let score = fit - (p.goal === "lose" ? 1.2 : 0.5) * protFrac;
+      if (leftP > 0) score -= 0.3 * Math.min(1, r.p / Math.max(1, leftP / mealsLeft));
+      if (isFinite(shareB) && shareB > 0) score += 0.2 * r.cost / shareB + 0.8 * Math.max(0, r.cost - shareB) / shareB;
+      if (!best || score < best.score) best = Object.assign(r, { score, c, s });
+    }
+    if (best) out.push(best);
+  }
+  out.sort((a, b) => a.score - b.score);
+  return { list: out, leftK, leftP, leftB, spent, aim };
+}
+function suggestCard() {
+  const p = state.profile, slot = logSlot;
+  const { list, leftK, leftB, spent } = suggestFor(slot);
+  const label = SLOTS.find(s => s[0] === slot)[1].toLowerCase();
+  let body;
+  if (leftK < 80 && slot !== "snack") body = `<p class="small" style="margin:0">${p.goal === "gain" ? "You've hit today's calories. Well done." : "You've reached today's calories. Water and a walk are your friends now."}</p>`;
+  else if (!list.length) body = `<p class="small" style="margin:0">${isFinite(leftB) && leftB < 150 ? `Only ${naira(Math.max(0, leftB))} left in today's budget. Raise the budget in Me, or set cheaper local prices on the foods you buy.` : "No combo fits right now. Build your own plate below."}</p>`;
+  else {
+    const n = list.length, start = suggestSkip % n, pick = [];
+    for (let i = 0; i < Math.min(3, n); i++) pick.push(list[(start + i) % n]);
+    body = `<div class="grid">${pick.map(r => `<div class="sug"><div class="row between" style="align-items:start"><div style="min-width:0"><b>${esc(r.c.name)}</b><p class="small muted" style="margin:2px 0 0">${r.items.map(i => `${esc(FOOD[i.fid].name.split(" (")[0].split(",")[0])} ${i.g} g`).join(" · ")}</p></div>
+      <button class="btn sm" data-act="usecombo" data-id="${r.c.id}" data-s="${r.s}">Add</button></div>
+      <div class="row small num" style="margin-top:6px;gap:12px"><span><b>${fmt(r.kcal)}</b> kcal</span><span style="color:var(--prot)"><b>${fmt(r.p)}</b> g protein</span><span><b>${naira(r.cost)}</b></span></div></div>`).join("")}</div>
+      ${n > 3 ? `<button class="btn line sm" data-act="moresug" style="margin-top:10px">Show other ideas</button>` : ""}`;
+  }
+  return `<section class="card"><div class="card-head"><h2>What should I eat?</h2><span class="small muted num">${leftK > 0 ? fmt(leftK) + " kcal left" : "target reached"}${p.budget ? ` · ${naira(Math.max(0, p.budget - spent))} left` : ""}</span></div>
+    <p class="small muted" style="margin:-4px 0 12px">Ideas for ${label}, sized to what's left of your day${p.budget ? " and budget" : ""}.</p>${body}</section>`;
+}
+/* ---------- Your own foods ---------- */
+function syncCustom() {
+  Object.keys(FOOD).forEach(k => { if (FOOD[k].custom) delete FOOD[k]; });
+  (state.customFoods || []).forEach(c => { FOOD[c.id] = Object.assign({ aka: "Your food", conf: "U", src: "Your own food", fib: 0, custom: true }, c); });
+}
+function customList() { return (state.customFoods || []).map(c => FOOD[c.id]).filter(Boolean); }
+function newFoodSheet(err, keep) {
+  keep = keep || {};
+  const basis = keep.basis || "pack";
+  const opt = CATS.map(c => `<option ${(keep.cat || "Snacks") === c ? "selected" : ""}>${c}</option>`).join("");
+  $("#sheet").innerHTML = `<div class="scrim" data-act="closesheet"></div><div class="panel" role="dialog" aria-modal="true" aria-label="Add your own food">
+    <div class="row between" style="align-items:start"><div><h2>Add your own food</h2><p class="small muted" style="margin:2px 0 0">Copy the numbers from the pack's nutrition label.</p></div><button class="x" data-act="closesheet" aria-label="Close">×</button></div>
+    <label class="field"><span>Food name</span><input type="text" id="cf-name" maxlength="40" placeholder="e.g. Beloxxi Cream Crackers" value="${esc(keep.name || "")}"></label>
+    <div class="field"><span>The label shows values</span><div class="seg" role="radiogroup"><label><input type="radio" name="cf-basis" value="pack" ${basis === "pack" ? "checked" : ""}><span>Per pack or serving</span></label><label><input type="radio" name="cf-basis" value="100" ${basis === "100" ? "checked" : ""}><span>Per 100 g</span></label></div></div>
+    <div class="fields">
+      <label class="field"><span id="cf-g-label">${basis === "pack" ? "Pack or serving weight (g)" : "Your usual portion (g)"}</span><input type="number" id="cf-g" inputmode="decimal" min="1" max="5000" value="${keep.g || ""}" placeholder="e.g. 40"></label>
+      <label class="field" id="cf-portion-wrap" ${basis === "pack" ? "hidden" : ""}><span>Portion name</span><input type="text" id="cf-portion" maxlength="24" placeholder="e.g. 1 plate" value="${esc(keep.portion || "")}"></label>
+    </div>
+    <div class="fields">
+      <label class="field"><span>Calories (kcal)</span><input type="number" id="cf-kcal" inputmode="decimal" min="0" max="2000" value="${keep.kcal || ""}"></label>
+      <label class="field"><span>Protein (g)</span><input type="number" id="cf-p" inputmode="decimal" min="0" max="200" value="${keep.p || ""}"></label>
+      <label class="field"><span>Carbs (g)</span><input type="number" id="cf-c" inputmode="decimal" min="0" max="500" value="${keep.c || ""}"></label>
+      <label class="field"><span>Fat (g)</span><input type="number" id="cf-f" inputmode="decimal" min="0" max="200" value="${keep.f || ""}"></label>
+    </div>
+    <div class="fields">
+      <label class="field"><span>Category</span><select id="cf-cat">${opt}</select></label>
+      <label class="field"><span id="cf-price-label">${basis === "pack" ? "Price per pack (₦)" : "Price per portion (₦)"}</span><input type="number" id="cf-price" inputmode="numeric" min="0" max="1000000" value="${keep.price || ""}" placeholder="optional"></label>
+    </div>
+    ${err ? `<p class="err" style="margin:0">${esc(err)}</p>` : ""}
+    <button class="btn block" data-act="savefood">Save food</button></div>`;
+  $("#sheet").hidden = false;
+}
+function readNewFood() {
+  const v = id => (document.getElementById(id) || {}).value || "";
+  const b = document.querySelector('input[name="cf-basis"]:checked');
+  return { name: v("cf-name").trim(), basis: b ? b.value : "pack", g: Number(v("cf-g")), portion: v("cf-portion").trim(), kcal: Number(v("cf-kcal")), p: Number(v("cf-p")) || 0, c: Number(v("cf-c")) || 0, f: Number(v("cf-f")) || 0, cat: v("cf-cat") || "Snacks", price: Number(v("cf-price")) || 0 };
+}
+function isOily(f) { return OILY_IDS.has(f.id) || (f.cat === "Soups & stews" && !NOT_OILY.has(f.id)); }
+function unitsFor(f) {
+  if (f.custom) return [{ k: "p", label: f.portion, g: f.pg }];
+  if (f.cat === "Swallow") return [{ k: "s", label: "Small wrap", g: 200 }, { k: "m", label: "Medium wrap", g: 300 }, { k: "l", label: "Large wrap", g: 450 }];
+  const u = [{ k: "p", label: cap(f.portion), g: f.pg }];
+  if (f.cat === "Soups & stews" && f.pg >= 200) u.push({ k: "ladle", label: "1 ladle", g: 120 });
+  if (f.cat === "Rice & grains" && f.pg >= 250) u.unshift({ k: "spoon", label: "1 serving spoon", g: 55 });
+  return u;
+}
+function calc(f, g, oil) {
+  const m = g / 100, om = isOily(f) ? OIL[oil || "normal"] : 1;
+  return { kcal: f.kcal * m + f.f * m * (om - 1) * 9, p: f.p * m, c: f.c * m, f: f.f * m * om };
+}
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function cap(s) { s = String(s || ""); return s.charAt(0).toUpperCase() + s.slice(1); }
+function fmt(n) { return Math.round(n).toLocaleString("en-NG"); }
+function fmt1(n) { return (Math.round(n * 10) / 10).toLocaleString("en-NG"); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function todayStr(d) { d = d || new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function parseDay(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d, 12); }
+function addDays(s, n) { const d = parseDay(s); d.setDate(d.getDate() + n); return todayStr(d); }
+function daysBetween(a, b) { return Math.round((parseDay(b) - parseDay(a)) / 864e5); }
+function dayLabel(s) {
+  const t = todayStr();
+  if (s === t) return "Today";
+  if (s === addDays(t, -1)) return "Yesterday";
+  return parseDay(s).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+function defaultSlot() { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 16 ? "lunch" : h < 21 ? "dinner" : "snack"; }
+
+/* ---------- State & storage ---------- */
+const LS_KEY = "chopcount.v1";
+function blank() { return { v: 1, updatedAt: 0, profile: null, days: {}, weights: [], favs: [], prices: {}, customFoods: [], lastAdjust: null }; }
+let state = blank();
+let storeMode = "local"; // "cloud" | "local"
+let docRef = null, writing = false, dirty = false, writeTimer = null;
+
+function readLocal() { try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+function writeLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+
+function compact() {
+  const cutoff = addDays(todayStr(), -60);
+  for (const ds of Object.keys(state.days)) {
+    const d = state.days[ds];
+    if (ds < cutoff && d.items) { d.sum = dayTotals(ds); delete d.items; delete d.ex; }
+    if (ds < addDays(todayStr(), -400)) delete state.days[ds];
+  }
+  if (state.weights.length > 400) state.weights = state.weights.slice(-400);
+}
+function save() {
+  state.updatedAt = Date.now();
+  compact();
+  writeLocal();
+  if (docRef) { clearTimeout(writeTimer); writeTimer = setTimeout(pushCloud, 1200); }
+}
+async function pushCloud() {
+  if (!docRef) return;
+  if (writing) { dirty = true; return; }
+  writing = true; dirty = false;
+  try { await docRef.set(JSON.parse(JSON.stringify(state))); }
+  catch (e) {
+    if (e && e.code === "unavailable") { setTimeout(pushCloud, 2500 + Math.random() * 2000); }
+    else { docRef = null; storeMode = "local"; if (current === "me") render(); }
+  }
+  writing = false;
+  if (dirty) pushCloud();
+}
+async function connectCloud() {
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    const ref = db.doc("data/users/" + id + "/state");
+    const snap = await ref.get();
+    docRef = ref; storeMode = "cloud";
+    if (snap.exists) {
+      const remote = snap.data();
+      if (remote && remote.v && (remote.updatedAt || 0) >= (state.updatedAt || 0)) { state = Object.assign(blank(), JSON.parse(JSON.stringify(remote))); syncCustom(); writeLocal(); }
+      else if (state.profile) pushCloud();
+    } else if (state.profile) pushCloud();
+    render();
+  } catch (e) { docRef = null; storeMode = "local"; }
+}
+
+/* ---------- Targets ---------- */
+function latestWeight(p) { const w = state.weights; return w.length ? w[w.length - 1].kg : p.weightKg; }
+function weeksSince(start) { if (!start) return 0; return Math.max(0, Math.floor(daysBetween(start, todayStr()) / 7)); }
+function formulaBurn(p, w) {
+  const bmr = 10 * w + 6.25 * p.heightCm - 5 * p.age + (p.sex === "m" ? 5 : -161);
+  return { bmr, tdee: bmr * p.act };
+}
+/* Measured burn: average intake on fully logged days minus energy stored or lost,
+   from the least-squares weight trend over the last 28 days (7,700 kcal per kg). */
+const KCAL_PER_KG = 7700;
+function measuredBurn(p) {
+  p = p || state.profile;
+  if (!p) return null;
+  const today = todayStr();
+  const from = [addDays(today, -27), p.measureFrom || p.startDate].sort().pop();
+  const ws = state.weights.filter(w => w.d >= from && w.d <= today);
+  const formula = formulaBurn(p, latestWeight(p)).tdee;
+  const spanDays = ws.length ? daysBetween(ws[0].d, today) + 1 : 0;
+  const days = []; for (let ds = ws.length ? ws[0].d : today; ds <= today; ds = addDays(ds, 1)) days.push(ds);
+  // A day counts as logged when it holds at least half a day's burn (skips forgotten meals)
+  const logged = days.filter(ds => ds !== today && dayTotals(ds).kcal >= formula * 0.5);
+  const need = { days: 14, logged: 10, weighins: 3 };
+  const base = { spanDays, logged: logged.length, weighins: ws.length, need, formula: Math.round(formula) };
+  if (spanDays < need.days || logged.length < need.logged || ws.length < need.weighins || daysBetween(ws[0].d, ws[ws.length - 1].d) < 10) return Object.assign(base, { ready: false });
+  const x0 = parseDay(ws[0].d);
+  const xs = ws.map(w => (parseDay(w.d) - x0) / 864e5), ys = ws.map(w => w.kg);
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length, my = ys.reduce((a, b) => a + b, 0) / ys.length;
+  let num = 0, den = 0; xs.forEach((x, i) => { num += (x - mx) * (ys[i] - my); den += (x - mx) ** 2; });
+  const slope = den ? num / den : 0; // kg per day
+  const intake = logged.reduce((a, ds) => a + dayTotals(ds).kcal, 0) / logged.length;
+  const burn = intake - slope * KCAL_PER_KG;
+  const ratio = logged.length / Math.max(1, spanDays - 1);
+  let conf = "low";
+  if (spanDays >= 21 && ratio >= 0.8 && ws.length >= 8) conf = "strong";
+  else if (ratio >= 0.7 && ws.length >= 4) conf = "good";
+  const sane = burn >= formula * 0.7 && burn <= formula * 1.4;
+  if (!sane) conf = "low";
+  return Object.assign(base, { ready: true, burn: Math.round(burn / 10) * 10, intake: Math.round(intake), weekly: slope * 7, conf, sane, ratio });
+}
+function targets(p, wOverride) {
+  p = p || state.profile;
+  const w = wOverride != null ? wOverride : latestWeight(p);
+  const fb = formulaBurn(p, w), bmr = fb.bmr;
+  let tdee = fb.tdee, source = "formula";
+  const mb = wOverride == null && p.useMeasured !== false ? measuredBurn(p) : null;
+  if (mb && mb.ready && mb.conf !== "low") { tdee = mb.burn; source = "measured"; }
+  const delta = { gain: 400, lose: -500, maintain: 0 }[p.goal];
+  const floor = p.sex === "m" ? 1500 : 1200;
+  let cal = Math.round((tdee + delta + (source === "formula" ? (p.calAdjust || 0) : 0)) / 10) * 10;
+  const floored = cal < floor;
+  cal = Math.max(cal, floor);
+  const protein = Math.round(w * (p.goal === "maintain" ? 1.4 : 1.8));
+  const fat = Math.round(cal * 0.25 / 9);
+  const carbs = Math.max(0, Math.round((cal - protein * 4 - fat * 9) / 4));
+  const water = Math.max(1500, Math.round(w * 35 / 250) * 250);
+  const base = p.baseSteps || 4000;
+  let steps = p.goal === "lose" ? Math.min(10000, base + 1500 + 500 * weeksSince(p.startDate)) : Math.min(10000, Math.max(6000, base));
+  steps = Math.round(steps / 500) * 500;
+  return { w, bmr: Math.round(bmr), tdee: Math.round(tdee), formulaTdee: Math.round(fb.tdee), source, delta, cal, floor, floored, protein, fat, carbs, water, steps };
+}
+
+/* ---------- Days ---------- */
+function getDay(ds) { return state.days[ds] || null; }
+function ensureDay(ds) { if (!state.days[ds]) state.days[ds] = { items: [], water: 0, steps: 0, wd: false, ex: {} }; const d = state.days[ds]; if (!d.items && !d.sum) d.items = []; if (!d.ex) d.ex = {}; return d; }
+function dayTotals(ds) {
+  const d = state.days[ds];
+  if (!d) return { kcal: 0, p: 0, c: 0, f: 0 };
+  if (!d.items && d.sum) return d.sum;
+  return (d.items || []).reduce((a, i) => ({ kcal: a.kcal + i.kcal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { kcal: 0, p: 0, c: 0, f: 0 });
+}
+function calStatus(goal, eaten, t) {
+  if (eaten < 1) return "none";
+  const r = eaten / t.cal;
+  if (goal === "gain") return r >= 0.95 ? "ok" : "under";
+  if (goal === "lose") return r > 1.03 ? "over" : r >= 0.8 ? "ok" : "under";
+  return r > 1.1 ? "over" : r >= 0.9 ? "ok" : "under";
+}
+function dayOnTrack(ds, t) { const tot = dayTotals(ds); return calStatus(state.profile.goal, tot.kcal, t) === "ok" && tot.p >= t.protein * 0.85; }
+function streak(t) {
+  let n = 0, ds = todayStr();
+  if (!dayOnTrack(ds, t)) ds = addDays(ds, -1);
+  while (dayOnTrack(ds, t) && n < 999) { n++; ds = addDays(ds, -1); }
+  return n;
+}
+
+/* ---------- Workouts ---------- */
+function walkEx(min, wk, brisk) { return [
+  { n: brisk ? "Brisk walk" : "Easy walk", d: `${min} min`, t: brisk ? "Fast enough that talking is a little hard. Counts toward your steps." : "Relaxed pace. Gets blood moving to sore muscles." },
+  { n: "Crunches", d: `3 × ${12 + wk}`, t: "Optional core work. Lift your shoulders, not your neck." },
+  { n: "Lying leg raises", d: `3 × ${8 + wk}`, t: "Lower back pressed to the floor. Slow on the way down." },
+  { n: "Superman hold", d: `3 × ${20 + 5 * wk} s`, t: "Lying face down, lift arms and legs together. Strengthens your back." }]; }
+function restEx() { return [
+  { n: "Hamstring stretch", d: "2 × 30 s each leg", t: "Leg straight on a chair, lean forward gently." },
+  { n: "Hip flexor stretch", d: "2 × 30 s each side", t: "Kneel on one knee, push hips forward." },
+  { n: "Chest stretch in a doorway", d: "2 × 30 s", t: "Forearm on the door frame, turn away slowly." },
+  { n: "Child's pose", d: "1 min", t: "Knees wide, sit back on your heels, arms forward." }]; }
+function workoutFor(ds) {
+  const p = state.profile, dow = parseDay(ds).getDay(), wk = Math.min(8, weeksSince(p.startDate));
+  if (p.goal === "gain") {
+    if (dow === 1 || dow === 4) return { type: "strength", title: "Upper body", sub: "Rest 60–90 s between sets. Slow on the way down.", ex: [
+      { n: "Push-ups", d: `4 × ${8 + wk}`, t: "Drop to your knees when you can't keep a straight body." },
+      { n: "Backpack rows", d: `4 × ${10 + wk}`, t: "Load a backpack with books, hinge at the hips, pull it to your belly." },
+      { n: "Chair dips", d: `3 × ${8 + wk}`, t: "Hands on a sturdy chair behind you, bend elbows to 90°." },
+      { n: "Pike push-ups", d: `3 × ${6 + wk}`, t: "Hips high, lower your head toward the floor. Builds the shoulders." },
+      { n: "Plank", d: `3 × ${30 + 5 * wk} s`, t: "Squeeze your glutes, keep your back flat." }] };
+    if (dow === 2 || dow === 5) return { type: "strength", title: "Lower body", sub: "Rest 60–90 s between sets.", ex: [
+      { n: "Squats", d: `4 × ${12 + wk}`, t: "Hold the loaded backpack once 20 reps feel easy." },
+      { n: "Reverse lunges", d: `3 × ${8 + wk} each leg`, t: "Step back, lower the back knee close to the floor." },
+      { n: "Glute bridges", d: `3 × ${12 + wk}`, t: "Pause 1 second at the top." },
+      { n: "Calf raises on a step", d: `3 × ${15 + wk}`, t: "Full stretch at the bottom, full rise at the top." },
+      { n: "Side plank", d: `2 × ${20 + 5 * wk} s each side`, t: "Hips up in a straight line." }] };
+    if (dow === 3 || dow === 6) return { type: "walk", title: "Walk and core", sub: "Recovery day: an easy walk plus 10 minutes of core work at home.", ex: walkEx(20, wk, false) };
+    return { type: "rest", title: "Rest and stretch", sub: "Eat your full target today. Muscle grows on rest days. Stretching is optional.", ex: restEx() };
+  }
+  if (p.goal === "lose") {
+    const rounds = wk >= 3 ? 4 : 3;
+    if (dow === 1 || dow === 3 || dow === 5) return { type: "strength", title: `Full-body circuit · ${rounds} rounds`, sub: "Do each move once, rest 1 minute, then repeat the round.", ex: [
+      { n: "Squats", d: `${12 + wk} reps`, t: "Sit back like there's a chair behind you." },
+      { n: "Push-ups", d: `${6 + wk} reps`, t: "Knees down or hands on a table edge is fine." },
+      { n: "Glute bridges", d: `${12 + wk} reps`, t: "Pause 1 second at the top." },
+      { n: "Step-ups on a stair", d: `${10 + Math.floor(wk / 2)} each leg`, t: "Push through the front heel." },
+      { n: "Marching on the spot", d: `${30 + 5 * wk} s`, t: "Knees high, arms pumping. Swap for jumping jacks when ready." },
+      { n: "Plank", d: `${20 + 5 * wk} s`, t: "Knees down if your back sags." }] };
+    if (dow === 2 || dow === 4 || dow === 6) return { type: "walk", title: "Brisk walk and core", sub: "A 30-minute brisk walk, then 10 minutes of core work at home.", ex: walkEx(30, wk, true) };
+    return { type: "rest", title: "Rest and stretch", sub: "An easy stroll is fine. Keep to your calorie target.", ex: restEx() };
+  }
+  if (dow === 1 || dow === 3 || dow === 5) return { type: "strength", title: "Full body", sub: "3 sets each, rest 60 s.", ex: [
+    { n: "Squats", d: `3 × ${12 + wk}`, t: "" }, { n: "Push-ups", d: `3 × ${8 + wk}`, t: "" },
+    { n: "Backpack rows", d: `3 × ${10 + wk}`, t: "" }, { n: "Glute bridges", d: `3 × ${12 + wk}`, t: "" },
+    { n: "Plank", d: `3 × ${30 + 5 * wk} s`, t: "" }] };
+  if (dow === 0) return { type: "rest", title: "Rest and stretch", sub: "", ex: restEx() };
+  return { type: "walk", title: "Walk and core", sub: "", ex: walkEx(20, wk, false) };
+}
+
+/* ---------- App shell ---------- */
+let current = "today";
+let viewDate = todayStr();
+let logSlot = defaultSlot();
+let logCat = "All";
+let logQuery = "";
+let plate = [];
+let trayOpen = false;
+let savingFav = false;
+let confirmReset = false;
+let restoreMsg = "";
+let obUnit = "cm";
+let planDay = null;
+
+const ICONS = {
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>',
+  progress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16M6 15l4-4 3 3 5-6"/></svg>',
+  me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 4-5 7-5s6 1.5 7 5"/></svg>'
+};
+function tabsHTML() {
+  const t = (k, label) => `<button class="tab" data-tab="${k}" ${current === k ? 'aria-current="page"' : ""}>${ICONS[k]}<span>${label}</span></button>`;
+  return `<nav class="tabs" aria-label="Sections"><div class="tabs-in">
+    ${t("today", "Today")}${t("plan", "Workout")}
+    <button class="tab add" data-tab="log" ${current === "log" ? 'aria-current="page"' : ""}><span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></span><span>Add food</span></button>
+    ${t("progress", "Progress")}${t("me", "Me")}
+  </div></nav>`;
+}
+function topbar(title, withDate) {
+  const isToday = viewDate === todayStr();
+  return `<div class="topbar"><div class="brand"><div class="brand-mark" aria-hidden="true"><span></span></div><h1>${title}</h1></div>
+    ${withDate ? `<div class="datenav"><button data-act="prevday" aria-label="Previous day">‹</button><b>${dayLabel(viewDate)}</b><button data-act="nextday" aria-label="Next day" ${isToday ? "disabled" : ""}>›</button></div>` : ""}</div>`;
+}
+
+function render() {
+  const app = $("#app");
+  if (!state.profile) { app.innerHTML = onboardingHTML(); updatePreview(); return; }
+  let body = "";
+  if (current === "today") body = todayHTML();
+  else if (current === "log") body = logHTML();
+  else if (current === "plan") body = planHTML();
+  else if (current === "progress") body = progressHTML();
+  else body = meHTML();
+  app.innerHTML = `<main class="wrap">${body}</main>${current === "log" && plate.length ? trayHTML() : ""}${tabsHTML()}`;
+  startFigs();
+}
+
+/* ---------- Profile form (onboarding + edit) ---------- */
+function profileFields(p) {
+  p = p || {};
+  const radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
+  const hcm = p.heightCm || "";
+  const ft = hcm ? Math.floor(hcm / 30.48) : "", inch = hcm ? Math.round((hcm / 2.54) % 12) : "";
+  return `<div class="grid">
+    <label class="field"><span>Your name</span><input type="text" id="pf-name" maxlength="30" value="${esc(p.name || "")}" placeholder="e.g. Shaka" autocomplete="given-name"></label>
+    <div class="field"><span>Goal</span><div class="seg" role="radiogroup">${radio("pf-goal", "gain", "Gain weight", p.goal === "gain")}${radio("pf-goal", "lose", "Lose weight", p.goal === "lose")}${radio("pf-goal", "maintain", "Stay the same", p.goal === "maintain")}</div></div>
+    <div class="field"><span>Sex (used in the calorie formula)</span><div class="seg" role="radiogroup">${radio("pf-sex", "m", "Male", p.sex === "m")}${radio("pf-sex", "f", "Female", p.sex === "f")}</div></div>
+    <div class="fields">
+      <label class="field"><span>Age (years)</span><input type="number" id="pf-age" inputmode="numeric" min="13" max="90" value="${p.age || ""}"></label>
+      <label class="field"><span>Weight (kg)</span><input type="number" id="pf-w" inputmode="decimal" min="30" max="250" step="0.1" value="${p.weightKg || ""}"></label>
+    </div>
+    <div class="field"><span class="row between"><span>Height</span><span class="seg" style="padding:2px;font-size:.8rem">${radio("pf-hu", "cm", "cm", obUnit === "cm")}${radio("pf-hu", "ft", "ft / in", obUnit === "ft")}</span></span>
+      ${obUnit === "cm" ? `<input type="number" id="pf-h" inputmode="numeric" min="120" max="230" value="${hcm}" placeholder="e.g. 175">`
+      : `<div class="fields"><input type="number" id="pf-ft" inputmode="numeric" min="4" max="7" value="${ft}" placeholder="feet" aria-label="Feet"><input type="number" id="pf-in" inputmode="numeric" min="0" max="11" value="${inch}" placeholder="inches" aria-label="Inches"></div>`}
+    </div>
+    <label class="field"><span>How active are you?</span><select id="pf-act">${ACT.map(a => `<option value="${a.k}" ${Number(p.act) === a.k ? "selected" : ""}>${a.label} — ${a.sub}</option>`).join("")}</select></label>
+    <label class="field"><span>Daily food budget in naira (optional)</span><input type="number" id="pf-budget" inputmode="numeric" min="0" max="1000000" step="100" value="${p.budget || ""}" placeholder="e.g. 3000"></label>
+    <label class="field"><span>Your usual daily steps (check Samsung Health or iPhone Health)</span><input type="number" id="pf-steps" inputmode="numeric" min="0" max="40000" step="100" value="${p.baseSteps || ""}" placeholder="e.g. 4000"></label>
+  </div>`;
+}
+function readProfile() {
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  const r = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
+  let heightCm;
+  if (obUnit === "cm") heightCm = Number(v("pf-h"));
+  else heightCm = Math.round((Number(v("pf-ft")) * 12 + Number(v("pf-in") || 0)) * 2.54);
+  const p = { name: v("pf-name"), goal: r("pf-goal"), sex: r("pf-sex"), age: Number(v("pf-age")), weightKg: Number(v("pf-w")), heightCm, act: Number(v("pf-act")), baseSteps: Number(v("pf-steps")) || 0, budget: Number(v("pf-budget")) || 0 };
+  const missing = [];
+  if (!p.goal) missing.push("goal");
+  if (!p.sex) missing.push("sex");
+  if (!(p.age >= 13 && p.age <= 90)) missing.push("age (13–90)");
+  if (!(p.weightKg >= 30 && p.weightKg <= 250)) missing.push("weight (30–250 kg)");
+  if (!(p.heightCm >= 120 && p.heightCm <= 230)) missing.push("height (120–230 cm)");
+  return { p, missing };
+}
+function onboardingHTML() {
+  return `<main class="wrap"><div class="ob">
+    <div class="ob-hero"><div class="brand"><div class="brand-mark" aria-hidden="true"><span></span></div><span class="eyebrow">Chop Count</span></div>
+      <h1>Count your chop, hit your goal.</h1>
+      <p class="muted">Calories and macros for eba, egusi, jollof, suya, shawarma and 175 more foods Nigerians eat, plus water, steps and a workout plan built around your goal.</p></div>
+    <div class="grid">
+      <div class="card">${profileFields({})}</div>
+      <div class="preview" id="preview"></div>
+      <p class="err" id="ob-err" hidden></p>
+      <button class="btn block" data-act="start">Start tracking</button>
+    </div></div></main>`;
+}
+function previewInner(p, missing) {
+  if (missing.length) return `<span class="eyebrow muted">Your daily targets</span><p class="muted small">Fill in ${missing.join(", ")} to see your targets.</p>`;
+  const t = targets(Object.assign({ startDate: todayStr(), calAdjust: 0 }, p), p.weightKg);
+  return `<span class="eyebrow muted">Your daily targets</span>
+    <div class="stats"><div class="stat"><span class="small muted">Calories</span><b class="num">${fmt(t.cal)}</b></div><div class="stat"><span class="small muted">Protein</span><b class="num">${t.protein} g</b></div><div class="stat"><span class="small muted">Water</span><b class="num">${fmt1(t.water / 1000)} L</b></div></div>
+    <p class="small muted">You burn about ${fmt(t.tdee)} kcal a day. ${p.goal === "gain" ? "You'll eat about 400 more than that." : p.goal === "lose" ? (t.floored ? `A 500 kcal cut would drop below the ${fmt(t.floor)} kcal safe minimum, so your target stays at ${fmt(t.floor)}.` : "You'll eat about 500 less than that.") : "You'll eat about the same."}</p>`;
+}
+function updatePreview() { const el = $("#preview"); if (!el) return; const { p, missing } = readProfile(); el.innerHTML = previewInner(p, missing); }
+
+/* ---------- Today ---------- */
+function ringSVG(eaten, target) {
+  const r = 62, c = 2 * Math.PI * r, frac = Math.min(1, eaten / target), over = eaten > target * 1.03;
+  return `<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="14"/>
+    <circle cx="75" cy="75" r="${r}" fill="none" stroke="${over && state.profile.goal !== "gain" ? "var(--fat)" : "var(--green)"}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(c * frac).toFixed(1)} ${c.toFixed(1)}"/></svg>`;
+}
+function macroBar(label, have, goal, color) {
+  const pct = Math.min(100, goal ? have / goal * 100 : 0);
+  return `<div class="macro"><div class="top"><span>${label}</span><span class="num"><b>${fmt(have)}</b> / ${fmt(goal)} g</span></div><div class="bar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
+}
+function spentHTML(ds) {
+  const d = getDay(ds), p = state.profile;
+  const spent = d && d.items ? d.items.reduce((a, i) => a + (i.cost || 0), 0) : 0;
+  if (!spent && !p.budget) return "";
+  return p.budget ? `<span style="color:${spent > p.budget ? "var(--fat)" : "inherit"}">${naira(spent)} of ${naira(p.budget)}</span>` : naira(spent);
+}
+function weighCard() {
+  if (viewDate !== todayStr()) return "";
+  const td = todayStr(), w = state.weights.find(x => x.d === td);
+  const week = state.weights.filter(x => daysBetween(x.d, td) < 7).length;
+  return `<section class="card"><div class="card-head"><h2>Morning weigh-in</h2><span class="pill ${week >= 3 ? "ok" : ""}">${Math.min(week, 7)} of 3 this week</span></div>
+    <div class="row"><input type="number" id="w-in" inputmode="decimal" min="30" max="250" step="0.1" placeholder="Weight (kg)" value="${w ? w.kg : ""}" aria-label="Today's weight in kg"><button class="btn" data-act="saveweight">${w ? "Update" : "Log"}</button></div>
+    <p class="small muted" style="margin:8px 0 0">After the toilet, before eating. 3+ a week lets the app measure your real metabolism.</p></section>`;
+}
+function todayHTML() {
+  const p = state.profile, t = targets(), d = getDay(viewDate) || { items: [], water: 0, steps: 0, wd: false }, tot = dayTotals(viewDate);
+  const left = t.cal - tot.kcal, st = calStatus(p.goal, tot.kcal, t), wo = workoutFor(viewDate);
+  const items = d.items || [];
+  const meals = SLOTS.map(([k, label]) => {
+    const list = items.filter(i => i.slot === k);
+    const kc = list.reduce((a, i) => a + i.kcal, 0);
+    return `<div class="meal"><div class="meal-head"><h3>${label}</h3><span class="small muted num">${list.length ? fmt(kc) + " kcal" : ""}</span></div>
+      ${list.length ? list.map(i => `<div class="item"><span class="nm">${esc(FOOD[i.fid] ? FOOD[i.fid].name : i.name)} <span class="muted small">· ${fmt(i.g)} g${i.oil && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(i.kcal)}</span><button class="x" data-act="rmitem" data-id="${i.id}" aria-label="Remove">×</button></div>`).join("")
+      : `<button class="btn line sm" data-act="logslot" data-slot="${k}" style="margin-top:6px">+ Add ${label.toLowerCase()}</button>`}
+    </div>`;
+  }).join("");
+  const water = d.water || 0, sachets = Math.ceil(t.water / 500), full = Math.floor(water / 500);
+  const steps = d.steps || 0;
+  const woDone = wo.type === "rest" || d.wd;
+  const checks = [
+    ["Calories", st === "ok", st === "none" ? "Nothing logged yet" : st === "ok" ? "On target" : st === "over" ? `${fmt(tot.kcal - t.cal)} kcal over` : `${fmt(t.cal - tot.kcal)} kcal to go`],
+    ["Protein", tot.p >= t.protein * 0.85, `${fmt(tot.p)} of ${t.protein} g`],
+    ["Water", water >= t.water, `${fmt1(water / 1000)} of ${fmt1(t.water / 1000)} L`],
+    ["Steps", steps >= t.steps, `${fmt(steps)} of ${fmt(t.steps)}`],
+    ["Workout", woDone, wo.type === "rest" ? "Rest day" : d.wd ? "Done" : wo.title]
+  ];
+  const done = checks.filter(c => c[1]).length, sk = streak(t);
+  const heroLine = tot.kcal < 1 ? "Log your first meal to start the day." : left >= 0 ? `${fmt(left)} kcal left` : `${fmt(-left)} kcal over target`;
+  return `${topbar(p.name ? esc(p.name) : "Today", true)}
+  ${updateBanner()}
+  <div class="grid two"><div class="col">
+    <section class="card"><div class="hero"><div class="ring">${ringSVG(tot.kcal, t.cal)}<div class="center"><span class="big num">${fmt(tot.kcal)}</span><span class="small muted">of ${fmt(t.cal)} kcal</span></div></div>
+      <div class="macros"><p class="small"><b>${heroLine}</b></p>${macroBar("Protein", tot.p, t.protein, "var(--prot)")}${macroBar("Carbs", tot.c, t.carbs, "var(--carb)")}${macroBar("Fat", tot.f, t.fat, "var(--fat)")}</div></div></section>
+    <section class="card"><div class="card-head"><h2>Daily checklist</h2><span class="pill ${done === 5 ? "ok" : ""}">${done}/5 · ${sk} day streak</span></div>
+      <div class="checklist">${checks.map(c => `<div class="check"><span class="tick ${c[1] ? "on" : ""}" aria-hidden="true">✓</span><span><b>${c[0]}</b></span><span class="small muted num">${c[2]}</span></div>`).join("")}</div></section>
+    ${viewDate === todayStr() ? suggestCard() : ""}
+    <section class="card"><div class="card-head"><h2>Meals</h2><span class="row"><span class="small muted num">${spentHTML(viewDate)}</span><button class="btn sm" data-tab="log">Add food</button></span></div>${meals}</section>
+  </div><div class="col">
+    ${weighCard()}
+    <section class="card"><div class="card-head"><h2>Water</h2><span class="num small muted">${fmt1(water / 1000)} / ${fmt1(t.water / 1000)} L</span></div>
+      <div class="water-glasses" aria-label="${full} of ${sachets} sachets">${Array.from({ length: sachets }, (_, i) => `<span class="sachet ${i < full ? "full" : ""}"></span>`).join("")}</div>
+      <div class="wrapflex"><button class="btn sm" data-act="water" data-ml="500">+ Sachet 500 ml</button><button class="btn ghost sm" data-act="water" data-ml="250">+ Cup 250 ml</button><button class="btn line sm" data-act="water" data-ml="-250" ${water ? "" : "disabled"}>− 250 ml</button></div></section>
+    <section class="card"><div class="card-head"><h2>Steps</h2><span class="num small muted">target ${fmt(t.steps)}</span></div>
+      <div class="bar" style="height:10px;margin-bottom:12px"><i style="width:${Math.min(100, steps / t.steps * 100)}%;background:var(--green)"></i></div>
+      <div class="row"><input type="number" id="steps-in" inputmode="numeric" min="0" max="100000" step="100" value="${steps || ""}" placeholder="Steps so far" aria-label="Steps today"><button class="btn" data-act="savesteps">Save</button></div>
+      <p class="small muted" style="margin:8px 0 0">Copy the number from Samsung Health or the iPhone Health app.</p></section>
+    <section class="card"><div class="card-head"><h2>${esc(wo.title)}</h2><span class="pill ${woDone ? "ok" : ""}">${wo.type === "rest" ? "Rest" : d.wd ? "Done" : wo.type === "walk" ? "Walk" : "Strength"}</span></div>
+      <p class="small muted" style="margin:0 0 12px">${esc(wo.sub)}${wo.ex.length ? ` ${wo.ex.length} moves, all at home.` : ""}</p>
+      ${true ? `<div class="wrapflex"><button class="btn sm" data-tab="plan">Open workout</button>${wo.type === "walk" ? `<button class="btn ghost sm" data-act="wdone">${d.wd ? "Mark not done" : "Mark done"}</button>` : ""}</div>` : ""}</section>
+  </div></div>`;
+}
+
+/* ---------- Log (plate builder) ---------- */
+function portionKcal(f) { return calc(f, unitsFor(f)[f.cat === "Swallow" && !f.custom ? 1 : 0].g, "normal").kcal; }
+function foodListHTML() {
+  const q = logQuery.trim().toLowerCase();
+  const mine = customList();
+  const list = mine.concat(FOODS.map(r => FOOD[r[0]])).filter(f => (logCat === "All" || (logCat === "My foods" ? f.custom : f.cat === logCat && !f.custom)) && (!q || (f.name + " " + f.aka).toLowerCase().includes(q)));
+  const row = f => { const u = unitsFor(f)[f.cat === "Swallow" && !f.custom ? 1 : 0];
+    return `<button class="food" data-act="openfood" data-id="${f.id}"><span class="nm">${esc(f.name)}${f.custom ? ' <span class="pill ok">Your food</span>' : f.conf === "C" ? ' <span class="pill est">Estimate</span>' : ""}<br><span class="aka">${esc(f.aka)}</span></span><span class="kc num"><b>${fmt(portionKcal(f))}</b> kcal<br><span class="muted">${esc(u.label.toLowerCase())}</span></span></button>`; };
+  if (!list.length) return `<p class="muted">No food matches “${esc(logQuery)}”. Try another name, like “akpu” for fufu.</p>`;
+  if (logCat === "All" && !q) return (mine.length ? `<h3 class="cat-h">My foods</h3>${mine.map(row).join("")}` : "") + CATS.map(c => `<h3 class="cat-h">${c}</h3>${list.filter(f => f.cat === c && !f.custom).map(row).join("")}`).join("");
+  return list.map(row).join("");
+}
+function logHTML() {
+  const listHTML = foodListHTML();
+  const favs = state.favs.length ? `<section class="card"><div class="card-head"><h2>Usual plates</h2><span class="small muted">Tap to add to ${SLOTS.find(s => s[0] === logSlot)[1].toLowerCase()}</span></div>
+    <div class="wrapflex">${state.favs.map(fv => `<span class="fav"><button class="chip" data-act="addfav" data-id="${fv.id}">+ ${esc(fv.name)} <span class="muted num">· ${fmt(fv.items.reduce((a, i) => a + (FOOD[i.fid] ? calc(FOOD[i.fid], i.g, i.oil).kcal : 0), 0))}</span></button><button class="x" data-act="rmfav" data-id="${fv.id}" aria-label="Delete ${esc(fv.name)}">×</button></span>`).join("")}</div></section>` : "";
+  return `${topbar("Add food", true)}
+  <div class="grid">
+    <div class="seg" role="radiogroup" aria-label="Meal">${SLOTS.map(([k, l]) => `<label><input type="radio" name="slot" value="${k}" ${logSlot === k ? "checked" : ""}><span>${l}</span></label>`).join("")}</div>
+    ${viewDate === todayStr() ? suggestCard() : ""}
+    ${favs}
+    <section class="card">
+      <input type="search" id="food-q" placeholder="Search: eba, egusi, suya, moi moi…" value="${esc(logQuery)}" aria-label="Search foods" autocomplete="off">
+      <button class="btn line sm" data-act="newfood" style="margin-top:10px">+ Add your own food</button>
+      <div class="chips" style="margin-top:10px">${["All"].concat(customList().length ? ["My foods"] : [], CATS).map(c => `<button class="chip" data-act="cat" data-cat="${c}" aria-pressed="${logCat === c}">${c}</button>`).join("")}</div>
+      <div class="food-list" id="food-list">${listHTML}</div>
+      <p class="small muted" style="margin-top:12px">Values per portion as eaten. Soups are counted without meat or fish; add those from Proteins. “Estimate” marks recipe-based values.</p>
+    </section>
+  </div>`;
+}
+function plateTotals() { return plate.reduce((a, i) => { const m = calc(FOOD[i.fid], i.g, i.oil); return { kcal: a.kcal + m.kcal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f }; }, { kcal: 0, p: 0, c: 0, f: 0 }); }
+function trayHTML() {
+  const t = plateTotals(), slotLabel = SLOTS.find(s => s[0] === logSlot)[1];
+  return `<div class="tray"><div class="tray-in">
+    <div class="row between"><button class="row" data-act="tray" style="background:none;border:0;color:inherit;padding:0;text-align:left" aria-expanded="${trayOpen}"><span><b>Plate · ${plate.length} item${plate.length > 1 ? "s" : ""}</b><br><span class="small muted num">${fmt(t.kcal)} kcal · P ${fmt(t.p)} · C ${fmt(t.c)} · F ${fmt(t.f)} g</span></span><span aria-hidden="true" style="margin-left:6px">${trayOpen ? "▾" : "▴"}</span></button>
+    <button class="btn" data-act="commit">Add to ${slotLabel.toLowerCase()}</button></div>
+    ${trayOpen ? `<div class="tray-list">${plate.map((i, ix) => { const f = FOOD[i.fid] || { name: "Deleted food", f: 0, kcal: 0, p: 0, c: 0, cat: "" }; return `<div class="item"><span class="nm">${esc(f.name)} <span class="muted small">· ${fmt(i.g)} g${isOily(f) && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(calc(f, i.g, i.oil).kcal)}</span><button class="x" data-act="rmplate" data-ix="${ix}" aria-label="Remove">×</button></div>`; }).join("")}</div>
+      ${savingFav ? `<div class="row"><input type="text" id="fav-name" maxlength="28" placeholder="Name, e.g. Eba + egusi" aria-label="Plate name"><button class="btn ghost sm" data-act="savefav">Save</button></div>`
+      : `<div class="wrapflex"><button class="btn ghost sm" data-act="favmode">Save as usual plate</button><button class="btn ghost sm" data-act="clearplate">Clear plate</button></div>`}` : ""}
+  </div></div>`;
+}
+
+/* ---------- Food sheet ---------- */
+let sheetState = null;
+function openFood(id) {
+  const f = FOOD[id], units = unitsFor(f);
+  sheetState = { f, unit: units[f.cat === "Swallow" && !f.custom ? 1 : 0].k, qty: 1, oil: "normal", custom: null };
+  drawSheet();
+  $("#sheet").hidden = false;
+}
+function sheetGrams() { const s = sheetState; if (s.custom != null) return s.custom; const u = unitsFor(s.f).find(x => x.k === s.unit); return Math.round(u.g * s.qty); }
+function drawSheet() {
+  const s = sheetState, f = s.f, units = unitsFor(f), g = sheetGrams(), m = calc(f, g, s.oil);
+  const srcText = f.src.startsWith("WAFCT") ? "FAO West Africa food table" : f.src === "Recipe estimate" ? "Recipe estimate" : f.src;
+  $("#sheet").innerHTML = `<div class="scrim" data-act="closesheet"></div><div class="panel" role="dialog" aria-modal="true" aria-label="${esc(f.name)}">
+    <div class="row between" style="align-items:start"><div><h2>${esc(f.name)}</h2><p class="small muted" style="margin:2px 0 0">${esc(f.aka)} · ${esc(srcText)}${f.conf === "C" ? ' <span class="pill est">Estimate</span>' : ""}</p></div><button class="x" data-act="closesheet" aria-label="Close">×</button></div>
+    <div class="field"><span>Portion</span><div class="wrapflex">${units.map(u => `<button class="chip" data-act="unit" data-k="${u.k}" aria-pressed="${s.custom == null && s.unit === u.k}">${esc(u.label)} · ${u.g} g</button>`).join("")}</div></div>
+    <div class="row between"><div class="stepper"><button data-act="qty" data-d="-0.5" aria-label="Less">−</button><b class="num">${s.custom != null ? "–" : s.qty}</b><button data-act="qty" data-d="0.5" aria-label="More">+</button></div>
+      <label class="field" style="width:120px"><span>Or grams</span><input type="number" id="sheet-g" inputmode="numeric" min="1" max="3000" value="${g}"></label></div>
+    ${isOily(f) ? `<div class="field"><span>Oil in this pot</span><div class="seg" role="radiogroup">${[["light", "Light"], ["normal", "Normal"], ["heavy", "Heavy"]].map(([k, l]) => `<label><input type="radio" name="oil" value="${k}" ${s.oil === k ? "checked" : ""}><span>${l}</span></label>`).join("")}</div></div>` : ""}
+    <div class="mgrid" id="sheet-m">${mgridInner(m)}</div>
+    <div class="row between"><span class="small">Cost: <b class="num" id="sheet-cost">${naira(costOf(f, g))}</b></span>
+      <label class="row small" style="gap:8px"><span class="muted">Price for ${esc(f.cat === "Swallow" ? "1 medium wrap" : f.portion)} ₦</span><input type="number" id="sheet-price" inputmode="numeric" min="0" max="100000" step="10" value="${portionPrice(f)}" style="width:92px;padding:8px" aria-label="Your price"></label></div>
+    <button class="btn block" data-act="toplate">Add to plate</button>
+    ${f.custom ? `<button class="btn line sm" data-act="delfood" data-id="${f.id}">Delete this food</button>` : ""}</div>`;
+}
+function mgridInner(m) { return `<div><b class="num">${fmt(m.kcal)}</b><span>kcal</span></div><div><b class="num" style="color:var(--prot)">${fmt1(m.p)}</b><span>protein g</span></div><div><b class="num" style="color:var(--carb)">${fmt1(m.c)}</b><span>carbs g</span></div><div><b class="num" style="color:var(--fat)">${fmt1(m.f)}</b><span>fat g</span></div>`; }
+function closeSheet() { $("#sheet").hidden = true; $("#sheet").innerHTML = ""; sheetState = null; }
+
+/* ---------- Plan ---------- */
+function figBlock(name) {
+  const key = FIG_FOR[name]; if (!key) return "";
+  const q = encodeURIComponent(name.replace(" on a stair", "").replace(" on a step", "") + " exercise how to do proper form");
+  return `<div class="figbox"><button class="figbtn" data-act="figtap" data-fig="${key}" aria-label="Pause or step through the ${esc(name)} demonstration">${figSVG(key)}</button>
+    <div class="row between"><span class="muted figcap" data-figcap="${key}">${figCaption(key)}</span><a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">Watch a video ↗</a></div></div>`;
+}
+const REDUCED = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+const figState = new Map();
+let figRAF = null;
+function figMode(key) { const st = figState.get(key); return st ? st.mode : (REDUCED ? "start" : "play"); }
+function figCaption(key) { const m = figMode(key); return m === "play" ? "Tap to pause" : m === "start" ? "Start position · tap for end" : "End position · tap to play"; }
+function figLoop(ts) {
+  const els = document.querySelectorAll("svg.fig");
+  if (!els.length) { figRAF = null; return; }
+  els.forEach(svg => {
+    const key = svg.dataset.fig, fig = FIGS[key];
+    let st = figState.get(key); if (!st) { st = { mode: REDUCED ? "start" : "play", t0: ts }; figState.set(key, st); }
+    let k;
+    if (st.mode === "play") { const dur = (fig.dur || 2.4) * 1000, ph = ((ts - st.t0) % dur) / dur; k = (1 - Math.cos(2 * Math.PI * ph)) / 2; }
+    else k = st.mode === "start" ? 0 : 1;
+    if (svg.__k === k) return; svg.__k = k;
+    const fr = figFrame(fig, k);
+    svg.querySelector(".f-near").setAttribute("d", fr.near);
+    svg.querySelector(".f-far").setAttribute("d", fr.far);
+    const h = svg.querySelector(".f-head"); h.setAttribute("cx", fr.head[0].toFixed(1)); h.setAttribute("cy", fr.head[1].toFixed(1));
+    const bag = svg.querySelector(".f-bag"); if (bag && fr.bag) { bag.setAttribute("x", (fr.bag[0] - 7).toFixed(1)); bag.setAttribute("y", (fr.bag[1] - 2).toFixed(1)); }
+  });
+  figRAF = requestAnimationFrame(figLoop);
+}
+function startFigs() { if (!figRAF && document.querySelector("svg.fig")) figRAF = requestAnimationFrame(figLoop); }
+function planHTML() {
+  const p = state.profile, monday = addDays(viewDate, -((parseDay(viewDate).getDay() + 6) % 7));
+  if (!planDay || planDay < monday || planDay > addDays(monday, 6)) planDay = viewDate;
+  const ds0 = planDay, future = ds0 > todayStr();
+  const d = getDay(ds0) || { ex: {}, wd: false }, wo = workoutFor(ds0);
+  const week = Array.from({ length: 7 }, (_, i) => { const ds = addDays(monday, i), w = workoutFor(ds), dd = getDay(ds);
+    return `<button class="wday ${w.type === "strength" ? "strength" : ""} ${ds === ds0 ? "today" : ""}" data-act="planday" data-d="${ds}" aria-pressed="${ds === ds0}" style="border:0">${parseDay(ds).toLocaleDateString("en-GB", { weekday: "short" })}<b>${w.type === "strength" ? "Train" : w.type === "walk" ? "Walk" : "Rest"}</b>${dd && dd.wd ? "✓" : "&nbsp;"}</button>`; }).join("");
+  const ex = d.ex || {};
+  const wk = weeksSince(p.startDate) + 1;
+  return `${topbar("Workout", true)}
+  <div class="grid two"><div class="col">
+    <section class="card"><div class="card-head"><h2>This week</h2><span class="pill">Week ${wk}</span></div><div class="week">${week}</div>
+      <p class="small muted" style="margin:10px 0 0">Tap a day to see its workout.</p>
+      <p class="small muted" style="margin:6px 0 0">${p.goal === "gain" ? "Four strength days build size. Reps rise each week, so the same moves keep getting harder." : p.goal === "lose" ? "Three circuits keep your muscle while you lose fat; walking days add to your steps. Reps and rounds rise each week." : "Three full-body days keep you strong."}</p></section>
+    <section class="card"><h3>No gym needed</h3><p class="small muted" style="margin:6px 0 0">Every workout here is done at home with your body weight, a chair, a stair step and a backpack loaded with books or bags of rice. Short on space? A mat-sized patch of floor is enough.</p></section>
+    ${p.goal === "gain" ? `<section class="card"><h3>Training at a gym?</h3><p class="small muted" style="margin:6px 0 0">Do the same pattern with weights: bench or dumbbell press, rows, shoulder press, squats, Romanian deadlifts. 3–4 sets of 6–12 reps, and add weight once you reach 12 reps on every set.</p></section>` : ""}
+  </div><div class="col">
+    <section class="card"><div class="card-head"><h2>${esc(wo.title)}</h2><span class="pill ${d.wd ? "ok" : ""}">${future ? "Preview · " : ""}${dayLabel(ds0)}</span></div>
+      <p class="small muted" style="margin:0">${esc(wo.sub)}</p>
+      ${wo.ex.length ? `<div style="margin-top:6px">${wo.ex.map((e, i) => `<div class="ex"><button class="tick ${ex[i] ? "on" : ""}" data-act="extick" data-i="${i}" data-d="${ds0}" ${future ? "disabled" : ""} aria-pressed="${!!ex[i]}" aria-label="Done: ${esc(e.n)}">✓</button><div style="min-width:0"><div class="row between"><b>${esc(e.n)}</b><span class="dose num">${esc(e.d)}</span></div>${e.t ? `<p class="small muted" style="margin:3px 0 0">${esc(e.t)}</p>` : ""}${figBlock(e.n)}</div></div>`).join("")}</div>` : ""}
+      ${wo.type !== "rest" && !future ? `<button class="btn block ${d.wd ? "ghost" : ""}" data-act="wdone" data-d="${ds0}" style="margin-top:12px">${d.wd ? "Mark as not done" : "Mark workout done"}</button>` : ""}
+      <p class="small muted" style="margin:12px 0 0">Stop any move that causes sharp pain. Mild muscle soreness the next day is normal.</p></section>
+  </div></div>`;
+}
+
+/* ---------- Progress ---------- */
+function weightChart() {
+  const pts = state.weights.filter(w => daysBetween(w.d, todayStr()) <= 84);
+  if (pts.length < 2) return `<p class="small muted">Weigh in 3 or more mornings a week, after the toilet and before eating. The chart appears after two weigh-ins.</p>`;
+  const W = 340, H = 170, L = 36, R = 12, T = 12, B = 26;
+  const x0 = parseDay(pts[0].d), span = Math.max(1, daysBetween(pts[0].d, pts[pts.length - 1].d));
+  let lo = Math.min(...pts.map(p => p.kg)), hi = Math.max(...pts.map(p => p.kg));
+  if (hi - lo < 2) { const m = (hi + lo) / 2; lo = m - 1; hi = m + 1; }
+  lo = Math.floor(lo); hi = Math.ceil(hi);
+  const X = d => L + (daysBetween(pts[0].d, d) / span) * (W - L - R), Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const ticks = [lo, (lo + hi) / 2, hi];
+  const path = pts.map((p, i) => (i ? "L" : "M") + X(p.d).toFixed(1) + " " + Y(p.kg).toFixed(1)).join(" ");
+  const area = path + ` L${X(pts[pts.length - 1].d).toFixed(1)} ${H - B} L${L} ${H - B} Z`;
+  const last = pts[pts.length - 1];
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Weight over time">
+    ${ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${fmt1(v)}</text>`).join("")}
+    <path d="${area}" fill="var(--green)" opacity=".12"/><path d="${path}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${pts.map(p => `<circle cx="${X(p.d)}" cy="${Y(p.kg)}" r="3" fill="var(--surface)" stroke="var(--green)" stroke-width="2"/>`).join("")}
+    <circle cx="${X(last.d)}" cy="${Y(last.kg)}" r="5" fill="var(--green)"/>
+    <text x="${L}" y="${H - 6}">${parseDay(pts[0].d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</text>
+    <text x="${W - R}" y="${H - 6}" text-anchor="end">${parseDay(last.d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</text></svg>`;
+}
+function calChart(t) {
+  const days = Array.from({ length: 7 }, (_, i) => addDays(todayStr(), i - 6));
+  const vals = days.map(ds => dayTotals(ds).kcal);
+  const W = 340, H = 160, L = 36, R = 8, T = 10, B = 24;
+  const max = Math.max(t.cal * 1.25, ...vals), bw = (W - L - R) / 7;
+  const Y = v => T + (1 - v / max) * (H - T - B);
+  const step = max > 3000 ? 1000 : 500;
+  const ticks = []; for (let v = 0; v <= max; v += step) ticks.push(v);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Calories, last 7 days">
+    ${ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v / 1000}k</text>`).join("")}
+    ${vals.map((v, i) => { const st = calStatus(state.profile.goal, v, t); const x = L + i * bw + bw * 0.18, w = bw * 0.64;
+      return `<rect x="${x.toFixed(1)}" y="${Y(v).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0, H - B - Y(v)).toFixed(1)}" rx="4" fill="${st === "ok" ? "var(--green)" : st === "none" ? "var(--surface-2)" : "var(--amber)"}"/>
+      <text x="${(x + w / 2).toFixed(1)}" y="${H - 7}" text-anchor="middle">${parseDay(days[i]).toLocaleDateString("en-GB", { weekday: "narrow" })}</text>`; }).join("")}
+    <line x1="${L}" x2="${W - R}" y1="${Y(t.cal)}" y2="${Y(t.cal)}" stroke="var(--ink)" stroke-dasharray="4 4" stroke-width="1.5"/>
+    <text x="${W - R}" y="${Y(t.cal) - 5}" text-anchor="end" style="fill:var(--ink)">target ${fmt(t.cal)}</text></svg>`;
+}
+function metabolismCard(t) {
+  const p = state.profile, mb = measuredBurn(p);
+  const row = (label, val, strong) => `<div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>${strong ? `<b>${label}</b>` : label}</span><b class="num">${val}</b></div>`;
+  const prog = (label, have, need) => `<div class="macro"><div class="top"><span>${label}</span><span class="num"><b>${Math.min(have, need)}</b> / ${need}</span></div><div class="bar"><i style="width:${Math.min(100, have / need * 100)}%;background:var(--green)"></i></div></div>`;
+  let body;
+  if (!mb.ready) {
+    body = `<p class="small muted" style="margin:0 0 12px">Your real burn appears after 14 days of logging with 3+ morning weigh-ins. Until then your targets use the formula.</p>
+      <div class="macros">${prog("Days tracked", mb.spanDays, mb.need.days)}${prog("Fully logged days", mb.logged, mb.need.logged)}${prog("Weigh-ins", mb.weighins, mb.need.weighins)}</div>`;
+  } else {
+    const confPill = { strong: "ok", good: "ok", low: "warn" }[mb.conf];
+    const diff = mb.burn - mb.formula;
+    body = `<div class="stats" style="margin-bottom:12px"><div class="stat"><span class="small muted">Measured</span><b class="num">${fmt(mb.burn)}</b></div><div class="stat"><span class="small muted">Formula</span><b class="num">${fmt(mb.formula)}</b></div><div class="stat"><span class="small muted">Difference</span><b class="num">${diff >= 0 ? "+" : "−"}${fmt(Math.abs(diff))}</b></div></div>
+      <p class="small" style="margin:0 0 8px">You ate an average of <b class="num">${fmt(mb.intake)} kcal</b> on ${mb.logged} fully logged days, and your weight trend moved <b class="num">${mb.weekly >= 0 ? "+" : "−"}${fmt1(Math.abs(mb.weekly))} kg a week</b>. ${mb.weekly >= 0 ? "Storing" : "Losing"} that weight ${mb.weekly >= 0 ? "takes" : "releases"} about ${fmt(Math.abs(mb.weekly) * KCAL_PER_KG / 7)} kcal a day, so your body burns about ${fmt(mb.burn)}.</p>
+      ${!mb.sane ? `<p class="small" style="margin:0;color:var(--warn)">This number is far from the formula, which usually means some meals weren't logged. Targets stay on the formula until it settles.</p>`
+      : mb.conf === "low" ? `<p class="small muted" style="margin:0">Log more days and weigh in more often to raise confidence. Targets switch to this number at “good”.</p>`
+      : `<p class="small muted" style="margin:0">${t.source === "measured" ? "Your targets now use this measured number." : "Measured burn is off in Me, so targets use the formula."}</p>`}`;
+  }
+  return `<section class="card"><div class="card-head"><h2>Your metabolism</h2>${mb.ready ? `<span class="pill ${{ strong: "ok", good: "ok", low: "warn" }[mb.conf]}">${mb.conf} confidence</span>` : `<span class="pill">Measuring</span>`}</div>
+    <div class="checklist" style="margin-bottom:12px">${row("Burn at rest (BMR, formula)", fmt(t.bmr) + " kcal")}${row("Daily burn, formula estimate", fmt(t.formulaTdee) + " kcal")}</div>
+    ${body}</section>`;
+}
+function suggestion(t) {
+  const p = state.profile, ws = state.weights;
+  if (t.source === "measured") return null;
+  if (ws.length < 2) return null;
+  const since = p.lastAdjust || p.startDate;
+  const recent = ws.filter(w => w.d >= since && daysBetween(w.d, todayStr()) <= 21);
+  if (recent.length < 2) return null;
+  const first = recent[0], last = recent[recent.length - 1], span = daysBetween(first.d, last.d);
+  if (span < 12) return { wait: true, text: `Weekly check: keep weighing in. Your plan is reviewed once you have two weigh-ins at least 12 days apart.` };
+  const rate = (last.kg - first.kg) / span * 7;
+  const r = `${rate >= 0 ? "+" : ""}${fmt1(rate)} kg/week`;
+  if (p.goal === "gain") {
+    if (rate < 0.1) return { delta: 200, text: `You're gaining ${r}, slower than the 0.25–0.5 kg/week that builds size. Add 200 kcal a day.` };
+    if (rate > 0.6) return { delta: -150, text: `You're gaining ${r}. Above about 0.5 kg/week most of the extra is fat. Cut 150 kcal a day.` };
+    return { ok: true, text: `Gaining ${r}. Right on pace; keep the plan as it is.` };
+  }
+  if (p.goal === "lose") {
+    if (rate > -0.2) {
+      if (t.cal - 150 < t.floor) return { ok: true, text: `Losing ${r}. Your calories are already at the safe minimum, so add 1,000 steps a day instead of eating less.` };
+      return { delta: -150, text: `Losing ${r}, slower than the 0.25–0.75 kg/week target. Cut 150 kcal a day.` };
+    }
+    if (rate < -0.01 * t.w) return { delta: 150, text: `Losing ${r}, faster than 1% of your weight a week, which costs muscle. Add 150 kcal a day.` };
+    return { ok: true, text: `Losing ${r}. Right on pace; keep the plan as it is.` };
+  }
+  if (Math.abs(rate) > 0.3) return { delta: rate > 0 ? -150 : 150, text: `Your weight is moving ${r}. Adjust by ${rate > 0 ? "−" : "+"}150 kcal a day to hold steady.` };
+  return { ok: true, text: `Weight steady (${r}). Keep the plan as it is.` };
+}
+function progressHTML() {
+  const p = state.profile, t = targets(), ws = state.weights, sg = suggestion(t);
+  const startW = ws.length ? ws[0].kg : p.weightKg, nowW = latestWeight(p), change = nowW - startW;
+  const last7 = Array.from({ length: 7 }, (_, i) => addDays(todayStr(), -i)).filter(ds => dayTotals(ds).kcal > 0);
+  const avg = k => last7.length ? last7.reduce((a, ds) => a + dayTotals(ds)[k], 0) / last7.length : 0;
+  const todayW = ws.find(w => w.d === todayStr());
+  return `${topbar("Progress", false)}
+  <div class="grid two"><div class="col">
+    <section class="card"><div class="card-head"><h2>Weight</h2><span class="pill ${p.goal === "gain" ? (change > 0 ? "ok" : "") : p.goal === "lose" ? (change < 0 ? "ok" : "") : ""}">${change >= 0 ? "+" : ""}${fmt1(change)} kg since start</span></div>
+      <div class="stats" style="margin-bottom:12px"><div class="stat"><span class="small muted">Start</span><b class="num">${fmt1(startW)}</b></div><div class="stat"><span class="small muted">Now</span><b class="num">${fmt1(nowW)}</b></div><div class="stat"><span class="small muted">Goal</span><b style="font-size:1rem">${GOALS[p.goal]}</b></div></div>
+      ${weightChart()}
+      <div class="row" style="margin-top:12px"><input type="number" id="w-in" inputmode="decimal" min="30" max="250" step="0.1" placeholder="Today's weight (kg)" value="${todayW ? todayW.kg : ""}" aria-label="Today's weight in kg"><button class="btn" data-act="saveweight">${todayW ? "Update" : "Log"}</button></div></section>
+    ${metabolismCard(t)}
+    ${sg ? `<section class="card ${sg.delta ? "suggest" : ""}"><h3>Weekly check</h3><p style="margin:6px 0 ${sg.delta ? "12px" : "0"}">${esc(sg.text)}</p>${sg.delta ? `<button class="btn" data-act="adjust" data-d="${sg.delta}">${sg.delta > 0 ? "Add" : "Cut"} ${Math.abs(sg.delta)} kcal → ${fmt(Math.max(t.floor, t.cal + sg.delta))} a day</button>` : ""}</section>` : ""}
+  </div><div class="col">
+    <section class="card"><div class="card-head"><h2>Last 7 days</h2><span class="small muted">green = on target</span></div>${calChart(t)}
+      <div class="stats" style="margin-top:12px"><div class="stat"><span class="small muted">Avg kcal</span><b class="num">${fmt(avg("kcal"))}</b></div><div class="stat"><span class="small muted">Avg protein</span><b class="num">${fmt(avg("p"))} g</b></div><div class="stat"><span class="small muted">Streak</span><b class="num">${streak(t)} d</b></div></div>
+      <p class="small muted" style="margin:10px 0 0">Averages count only days with food logged.</p></section>
+  </div></div>`;
+}
+
+/* ---------- Me ---------- */
+function meHTML() {
+  const p = state.profile, t = targets();
+  return `${topbar("Me", false)}
+  <div class="grid two"><div class="col">
+    <section class="card"><div class="card-head"><h2>Your targets</h2><span class="pill">${GOALS[p.goal]}</span></div>
+      <div class="checklist">
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Calories at rest (BMR)</span><b class="num">${fmt(t.bmr)}</b></div>
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>${t.source === "measured" ? `Daily burn, <b>measured</b> from your log <span class="small muted">(formula: ${fmt(t.formulaTdee)})</span>` : `× activity ${p.act} = daily burn (formula)`}</span><b class="num">${fmt(t.tdee)}</b></div>
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Goal adjustment</span><b class="num">${t.delta >= 0 ? "+" : ""}${t.delta}</b></div>
+        ${p.calAdjust ? `<div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Weekly check changes</span><b class="num">${p.calAdjust > 0 ? "+" : ""}${p.calAdjust}</b></div>` : ""}
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span><b>Daily target</b>${t.floored ? ` <span class="small muted">(safe minimum)</span>` : ""}</span><b class="num">${fmt(t.cal)} kcal</b></div>
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Protein · carbs · fat</span><b class="num">${t.protein} · ${t.carbs} · ${t.fat} g</b></div>
+        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Water · steps</span><b class="num">${fmt1(t.water / 1000)} L · ${fmt(t.steps)}</b></div>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">Based on ${fmt1(t.w)} kg, your latest weigh-in. Targets update when you log a new weight.</p>
+      <label class="row" style="margin-top:12px;align-items:flex-start;gap:10px"><input type="checkbox" id="use-measured" ${p.useMeasured !== false ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>Use my measured burn</b><br><span class="muted">Once 14+ days of logging give good confidence, targets follow your real burn instead of the formula.</span></span></label></section>
+    <section class="card"><h2>Saving</h2><p class="small" style="margin:6px 0 0">${storeMode === "cloud" ? '<span class="pill ok">Saved to your Claude account</span> Your log follows you to any device where you open Chop Count signed in.' : '<span class="pill warn">Saved on this phone only</span> Clearing the browser can erase it. Copy a backup code now and then.'}</p></section>
+  </div><div class="col">
+    <section class="card"><h2 style="margin-bottom:12px">Your details</h2>${profileFields(p)}<p class="err" id="ob-err" hidden></p><button class="btn block" data-act="saveprofile" style="margin-top:14px">Save details</button></section>
+    <section class="card"><h2>Backup</h2><p class="small muted" style="margin:6px 0 10px">Copy this code and keep it in your notes or WhatsApp. Paste it back on any phone to restore everything.</p>
+      <div class="wrapflex"><button class="btn ghost sm" data-act="copybackup">Copy backup code</button></div>
+      <textarea id="restore-in" placeholder="Paste a backup code to restore" aria-label="Backup code" style="margin-top:10px"></textarea>
+      <div class="row between" style="margin-top:8px"><span class="small ${restoreMsg.startsWith("Restored") ? "muted" : "err"}">${esc(restoreMsg)}</span><button class="btn line sm" data-act="restore">Restore</button></div></section>
+    <section class="card"><h2>Start over</h2><p class="small muted" style="margin:6px 0 10px">Deletes your profile and every log on this account.</p>
+      ${confirmReset ? `<div class="wrapflex"><button class="btn danger sm" data-act="reset">Yes, delete everything</button><button class="btn ghost sm" data-act="cancelreset">Keep my data</button></div>` : `<button class="btn line sm" data-act="askreset">Start over</button>`}</section>
+  </div></div>`;
+}
+
+/* ---------- Toast ---------- */
+let toastTimer = null, undoFn = null;
+function toast(msg, undo) {
+  const el = $("#toast"); undoFn = undo || null;
+  el.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button data-act="undo">Undo</button>' : ""}`;
+  el.hidden = false; clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; undoFn = null; }, 4000);
+}
+
+/* ---------- Actions ---------- */
+function go(tab) { current = tab; trayOpen = false; savingFav = false; confirmReset = false; restoreMsg = ""; render(); window.scrollTo(0, 0); }
+function addItemsToDay(entries) {
+  const d = ensureDay(viewDate);
+  entries.forEach(e => { const f = FOOD[e.fid]; if (!f) return; const m = calc(f, e.g, e.oil); d.items.push({ id: uid(), fid: e.fid, slot: logSlot, g: e.g, oil: isOily(f) ? (e.oil || "normal") : undefined, kcal: m.kcal, p: m.p, c: m.c, f: m.f, cost: Math.round(costOf(f, e.g)), name: f.name }); });
+  save();
+}
+document.addEventListener("click", async ev => {
+  const tabBtn = ev.target.closest("[data-tab]");
+  if (tabBtn) { go(tabBtn.dataset.tab); return; }
+  const el = ev.target.closest("[data-act]");
+  if (!el) return;
+  const a = el.dataset.act;
+  if (a === "start") {
+    const { p, missing } = readProfile();
+    if (missing.length) { const e = $("#ob-err"); e.textContent = "Please fill in: " + missing.join(", ") + "."; e.hidden = false; return; }
+    state.profile = Object.assign(p, { startDate: todayStr(), calAdjust: 0, lastAdjust: null });
+    state.weights = [{ d: todayStr(), kg: p.weightKg }];
+    save(); current = "today"; render(); if (docRef) pushCloud();
+  } else if (a === "prevday") { viewDate = addDays(viewDate, -1); planDay = null; render(); }
+  else if (a === "nextday") { if (viewDate < todayStr()) { viewDate = addDays(viewDate, 1); planDay = null; render(); } }
+  else if (a === "logslot") { logSlot = el.dataset.slot; go("log"); }
+  else if (a === "rmitem") {
+    const d = getDay(viewDate); const ix = d.items.findIndex(i => i.id === el.dataset.id); if (ix < 0) return;
+    const [gone] = d.items.splice(ix, 1); save(); render();
+    toast("Removed " + (FOOD[gone.fid] ? FOOD[gone.fid].name : "item"), () => { d.items.splice(ix, 0, gone); save(); render(); });
+  } else if (a === "water") {
+    const d = ensureDay(viewDate); d.water = Math.max(0, (d.water || 0) + Number(el.dataset.ml)); save(); render();
+  } else if (a === "savesteps") {
+    const v = Number($("#steps-in").value); if (!(v >= 0)) return; ensureDay(viewDate).steps = Math.round(v); save(); render(); toast("Steps saved");
+  } else if (a === "wdone") {
+    const d = ensureDay(el.dataset.d || viewDate); d.wd = !d.wd; save(); render(); if (d.wd) toast("Workout done. Nice one.");
+  } else if (a === "extick") {
+    const dsx = el.dataset.d || viewDate, d = ensureDay(dsx), i = el.dataset.i; d.ex[i] = !d.ex[i];
+    const wo = workoutFor(dsx); if (wo.ex.length && wo.ex.every((_, k) => d.ex[k])) d.wd = true;
+    save(); render();
+  } else if (a === "figtap") {
+    const key = el.dataset.fig, cur = figMode(key);
+    const next = cur === "play" ? "start" : cur === "start" ? "end" : "play";
+    figState.set(key, { mode: next, t0: performance.now() });
+    const svg = el.querySelector("svg.fig"); if (svg) svg.__k = undefined;
+    const cap = document.querySelector(`[data-figcap="${key}"]`); if (cap) cap.textContent = figCaption(key);
+  } else if (a === "planday") { planDay = el.dataset.d; render(); }
+  else if (a === "cat") { logCat = el.dataset.cat; render(); }
+  else if (a === "openfood") openFood(el.dataset.id);
+  else if (a === "closesheet") closeSheet();
+  else if (a === "unit") { sheetState.unit = el.dataset.k; sheetState.custom = null; sheetState.qty = 1; drawSheet(); }
+  else if (a === "qty") { if (sheetState.custom != null) { sheetState.custom = null; sheetState.qty = 1; } sheetState.qty = Math.max(0.5, Math.min(10, sheetState.qty + Number(el.dataset.d))); drawSheet(); }
+  else if (a === "toplate") {
+    const g = sheetGrams(); if (!(g > 0)) return;
+    plate.push({ fid: sheetState.f.id, g, oil: sheetState.oil }); const name = sheetState.f.name; closeSheet(); render(); toast(name + " added to plate");
+  } else if (a === "tray") { trayOpen = !trayOpen; render(); }
+  else if (a === "rmplate") { plate.splice(Number(el.dataset.ix), 1); if (!plate.length) { trayOpen = false; savingFav = false; } render(); }
+  else if (a === "clearplate") { plate = []; trayOpen = false; render(); }
+  else if (a === "favmode") { savingFav = true; render(); const i = $("#fav-name"); if (i) i.focus(); }
+  else if (a === "savefav") {
+    const name = ($("#fav-name").value || "").trim(); if (!name) { $("#fav-name").focus(); return; }
+    state.favs.push({ id: uid(), name, items: plate.map(i => ({ fid: i.fid, g: i.g, oil: i.oil })) }); savingFav = false; save(); render(); toast("Saved “" + name + "”");
+  } else if (a === "commit") {
+    const n = plate.length, label = SLOTS.find(s => s[0] === logSlot)[1];
+    addItemsToDay(plate); plate = []; trayOpen = false; savingFav = false; current = "today"; render(); window.scrollTo(0, 0);
+    toast(`${n} item${n > 1 ? "s" : ""} added to ${label.toLowerCase()}`);
+  } else if (a === "addfav") {
+    const fv = state.favs.find(x => x.id === el.dataset.id); if (!fv) return;
+    addItemsToDay(fv.items); render(); toast(`${fv.name} added to ${SLOTS.find(s => s[0] === logSlot)[1].toLowerCase()}`);
+  } else if (a === "rmfav") {
+    const ix = state.favs.findIndex(x => x.id === el.dataset.id); if (ix < 0) return;
+    const [gone] = state.favs.splice(ix, 1); save(); render(); toast("Deleted " + gone.name, () => { state.favs.splice(ix, 0, gone); save(); render(); });
+  } else if (a === "saveweight") {
+    const v = Number($("#w-in").value); if (!(v >= 30 && v <= 250)) { toast("Enter a weight between 30 and 250 kg"); return; }
+    const ds = todayStr(), ex = state.weights.find(w => w.d === ds);
+    if (ex) ex.kg = v; else state.weights.push({ d: ds, kg: v });
+    state.weights.sort((x, y) => x.d < y.d ? -1 : 1); state.profile.weightKg = v; save(); render(); toast("Weight saved. Targets updated.");
+  } else if (a === "adjust") {
+    state.profile.calAdjust = (state.profile.calAdjust || 0) + Number(el.dataset.d); state.profile.lastAdjust = todayStr(); save(); render(); toast("Daily target updated");
+  } else if (a === "saveprofile") {
+    const { p, missing } = readProfile();
+    if (missing.length) { const e = $("#ob-err"); e.textContent = "Please fill in: " + missing.join(", ") + "."; e.hidden = false; return; }
+    const old = state.profile;
+    if (p.goal !== old.goal) { old.calAdjust = 0; old.lastAdjust = null; old.startDate = todayStr(); }
+    if (p.weightKg !== latestWeight(old)) { const ds = todayStr(), ex = state.weights.find(w => w.d === ds); if (ex) ex.kg = p.weightKg; else state.weights.push({ d: ds, kg: p.weightKg }); }
+    state.profile = Object.assign(old, p); save(); render(); toast("Details saved");
+  } else if (a === "copybackup") {
+    const code = "CC1." + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    try { await navigator.clipboard.writeText(code); toast("Backup code copied"); }
+    catch (e) { const ta = $("#restore-in"); ta.value = code; ta.select(); toast("Code shown below. Copy it from there."); }
+  } else if (a === "restore") {
+    const raw = ($("#restore-in").value || "").trim();
+    try {
+      if (!raw.startsWith("CC1.")) throw 0;
+      const s = JSON.parse(decodeURIComponent(escape(atob(raw.slice(4)))));
+      if (!s || !s.profile || !s.days) throw 0;
+      state = Object.assign(blank(), s); syncCustom(); restoreMsg = "Restored."; save(); render(); toast("Backup restored");
+    } catch (e) { restoreMsg = "That code isn't a Chop Count backup. Copy the whole code, starting with CC1."; render(); }
+  } else if (a === "askreset") { confirmReset = true; render(); }
+  else if (a === "cancelreset") { confirmReset = false; render(); }
+  else if (a === "reset") { state = blank(); syncCustom(); plate = []; confirmReset = false; save(); current = "today"; render(); }
+  else if (a === "usecombo") {
+    const c = COMBOS.find(x => x.id === el.dataset.id); if (!c) return;
+    comboAt(c, Number(el.dataset.s)).items.forEach(i => plate.push(i));
+    current = "log"; trayOpen = true; savingFav = false; render(); toast(c.name + " added to plate. Adjust, then add to " + SLOTS.find(s => s[0] === logSlot)[1].toLowerCase());
+  }
+  else if (a === "newfood") newFoodSheet();
+  else if (a === "savefood") {
+    const n = readNewFood();
+    const err = !n.name ? "Give the food a name." : !(n.g > 0) ? (n.basis === "pack" ? "Enter the pack or serving weight in grams. It's printed on the pack." : "Enter your usual portion in grams.") : !(n.kcal > 0) ? "Enter the calories from the label." : "";
+    if (err) { newFoodSheet(err, n); return; }
+    const k = n.basis === "pack" ? 100 / n.g : 1;
+    const food = { id: "my_" + uid(), name: n.name, cat: n.cat, kcal: Math.round(n.kcal * k), p: +(n.p * k).toFixed(1), c: +(n.c * k).toFixed(1), f: +(n.f * k).toFixed(1), portion: n.basis === "pack" ? "1 pack" : (n.portion || "1 portion"), pg: Math.round(n.g), price: n.price };
+    state.customFoods = (state.customFoods || []).concat([food]); syncCustom(); save();
+    closeSheet(); logCat = "All"; logQuery = ""; render(); openFood(food.id); toast("Saved " + food.name + " to My foods");
+  }
+  else if (a === "delfood") {
+    const ix = state.customFoods.findIndex(c => c.id === el.dataset.id); if (ix < 0) return;
+    const [gone] = state.customFoods.splice(ix, 1); syncCustom(); save(); closeSheet(); render();
+    toast("Deleted " + gone.name, () => { state.customFoods.splice(ix, 0, gone); syncCustom(); save(); render(); });
+  }
+  else if (a === "moresug") { suggestSkip += 3; render(); }
+  else if (a === "undo") { const f = undoFn; $("#toast").hidden = true; undoFn = null; if (f) f(); }
+});
+document.addEventListener("input", ev => {
+  if (ev.target.id === "food-q") {
+    logQuery = ev.target.value; const box = $("#food-list"); if (box) box.innerHTML = foodListHTML();
+  } else if (ev.target.id === "sheet-g") {
+    const v = Number(ev.target.value);
+    if (v > 0 && v <= 3000) {
+      sheetState.custom = Math.round(v);
+      $("#sheet-m").innerHTML = mgridInner(calc(sheetState.f, sheetState.custom, sheetState.oil));
+      $("#sheet-cost").textContent = naira(costOf(sheetState.f, sheetState.custom));
+      document.querySelectorAll("#sheet [data-act=unit]").forEach(b => b.setAttribute("aria-pressed", "false"));
+      const q = document.querySelector("#sheet .stepper b"); if (q) q.textContent = "–";
+    }
+  } else if (ev.target.id === "sheet-price") {
+    const v = Number(ev.target.value);
+    if (v >= 0 && ev.target.value !== "") { state.prices[sheetState.f.id] = Math.round(v); $("#sheet-cost").textContent = naira(costOf(sheetState.f, sheetState.custom != null ? sheetState.custom : sheetGrams())); }
+  } else if (ev.target.closest && ev.target.closest(".ob")) updatePreview();
+});
+document.addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.id === "sheet-price") { save(); return; }
+  if (t.name === "cf-basis") {
+    const pack = t.value === "pack";
+    $("#cf-g-label").textContent = pack ? "Pack or serving weight (g)" : "Your usual portion (g)";
+    $("#cf-price-label").textContent = pack ? "Price per pack (₦)" : "Price per portion (₦)";
+    $("#cf-portion-wrap").hidden = pack; return;
+  }
+  if (t.id === "use-measured") { state.profile.useMeasured = t.checked; save(); render(); toast(t.checked ? "Targets will use your measured burn" : "Targets use the formula"); }
+  else if (t.name === "slot") { logSlot = t.value; render(); }
+  else if (t.name === "oil") { sheetState.oil = t.value; drawSheet(); }
+  else if (t.name === "pf-hu") {
+    const { p } = readProfile(); obUnit = t.value;
+    if (!state.profile) { $("#app").innerHTML = onboardingHTML(); fill(p); updatePreview(); }
+    else { render(); fill(p); }
+  } else if (t.closest && t.closest(".ob")) updatePreview();
+});
+function fill(p) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+  set("pf-name", p.name); set("pf-age", p.age || ""); set("pf-w", p.weightKg || ""); set("pf-act", p.act); set("pf-steps", p.baseSteps || ""); set("pf-budget", p.budget || "");
+  if (p.heightCm) { if (obUnit === "cm") set("pf-h", p.heightCm); else { set("pf-ft", Math.floor(p.heightCm / 30.48)); set("pf-in", Math.round((p.heightCm / 2.54) % 12)); } }
+  ["pf-goal", "pf-sex"].forEach(n => { const v = n === "pf-goal" ? p.goal : p.sex; const r = document.querySelector(`input[name="${n}"][value="${v}"]`); if (r) r.checked = true; });
+}
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape" && !$("#sheet").hidden) closeSheet();
+  if (ev.key === "Enter" && ev.target.id === "fav-name") { ev.preventDefault(); $("[data-act=savefav]").click(); }
+});
+/* Keep "today" fresh if the app stays open past midnight */
+let lastSeenDay = todayStr();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && todayStr() !== lastSeenDay) { if (viewDate === lastSeenDay) viewDate = todayStr(); lastSeenDay = todayStr(); render(); } });
+
+/* ---------- Installed app: updates and offline ---------- */
+const APP_BUILD = Number("__BUILD__") || 0;
+const UPDATE_URL = "https://corur131.github.io/chop-count/version.json";
+let updateInfo = null;
+const IS_NATIVE = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
+async function checkUpdate() {
+  if (!IS_NATIVE || !APP_BUILD) return;
+  try {
+    const r = await fetch(UPDATE_URL + "?t=" + Date.now(), { cache: "no-store" });
+    const v = await r.json();
+    if (v && v.build > APP_BUILD && v.apk) { updateInfo = v; render(); }
+  } catch (e) {}
+}
+function updateBanner() {
+  if (!updateInfo) return "";
+  return `<section class="card suggest"><div class="row between"><div><b>New version available</b><p class="small muted" style="margin:2px 0 0">Download it, then install over this app. Your data stays.</p></div>
+    <a class="btn sm" href="${esc(updateInfo.apk)}" target="_blank" rel="noopener" style="text-decoration:none">Download</a></div></section>`;
+}
+if ("serviceWorker" in navigator && /github\.io$/.test(location.hostname)) { navigator.serviceWorker.register("sw.js").catch(() => {}); }
+
+/* ---------- Boot ---------- */
+(function boot() {
+  const local = readLocal();
+  if (local && local.v) state = Object.assign(blank(), local);
+  syncCustom();
+  render();
+  connectCloud();
+  checkUpdate();
+})();
+</script>
+</body>
+</html>
