@@ -5,7 +5,8 @@
   "description": "Calorie, macro and fitness tracker built for Nigerian food.",
   "dependencies": {
     "@capacitor/android": "8.5.2",
-    "@capacitor/core": "8.5.2"
+    "@capacitor/core": "8.5.2",
+    "@capgo/capacitor-health": "8.11.12"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.2"

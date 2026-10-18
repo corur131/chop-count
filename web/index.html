@@ -1223,8 +1223,8 @@ function todayHTML() {
       <div class="wrapflex"><button class="btn sm" data-act="water" data-ml="500">+ Sachet 500 ml</button><button class="btn ghost sm" data-act="water" data-ml="250">+ Cup 250 ml</button><button class="btn line sm" data-act="water" data-ml="-250" ${water ? "" : "disabled"}>− 250 ml</button></div></section>
     <section class="card"><div class="card-head"><h2>Steps</h2><span class="num small muted">goal ${fmt(sg.goal)}</span></div>
       <div class="bar" style="height:10px;margin-bottom:12px"><i style="width:${Math.min(100, steps / sg.goal * 100)}%;background:var(--green)"></i></div>
-      <div class="row"><input type="number" id="steps-in" inputmode="numeric" min="0" max="100000" step="100" value="${steps || ""}" placeholder="Steps so far" aria-label="Steps today"><button class="btn" data-act="savesteps">Save</button></div>
-      <p class="small muted" style="margin:8px 0 0">${sg.adaptive ? `Today's goal comes from your last ${sg.n} days: beat it on more than half of them and it rises; a rough day lowers it a little.` : `Log steps for 3 days and the goal starts following what you actually walk.`}${sg.goal >= 8000 ? " Past about 8,000 a day the health benefit levels off; extra steps still burn calories." : ""} Copy the number from Samsung Health or the iPhone Health app before bed.</p></section>
+      ${stepSourceHTML(steps)}
+      <p class="small muted" style="margin:8px 0 0">${sg.adaptive ? `Today's goal comes from your last ${sg.n} days: beat it on more than half of them and it rises; a rough day lowers it a little.` : `Log steps for 3 days and the goal starts following what you actually walk.`}${sg.goal >= 8000 ? " Past about 8,000 a day the health benefit levels off; extra steps still burn calories." : ""} ${healthOn() ? "" : "Copy the number from Samsung Health or the iPhone Health app before bed."}</p></section>
     <section class="card"><div class="card-head"><h2>${esc(wo.title)}</h2><span class="pill ${woDone ? "ok" : ""}">${wo.type === "rest" ? "Rest" : d.wd ? "Done" : wo.type === "walk" ? "Walk" : wo.deload ? "Lighter week" : "Strength"}</span></div>
       <p class="small muted" style="margin:0 0 12px">${wo.type === "strength" ? `${wo.ex.length} moves ${PLACE_SHORT[tcfg().place]}, about ${wo.mins} min. Stop each set with ${wo.rir} reps left.` : esc(wo.sub)}</p>
       ${true ? `<div class="wrapflex"><button class="btn sm" data-tab="plan">Open workout</button>${wo.type === "walk" ? `<button class="btn ghost sm" data-act="wdone">${d.wd ? "Mark not done" : "Mark done"}</button>` : ""}</div>` : ""}</section>
@@ -1711,6 +1711,8 @@ document.addEventListener("click", async ev => {
     if (err) { e.textContent = err.endsWith(".") ? err : "Please enter " + err + "."; e.hidden = false; return; }
     Object.assign(state.profile, o, { trainStart: todayStr() }); save(); render(); window.scrollTo(0, 0); toast("Your plan is ready");
   }
+  else if (a === "hconnect") healthConnect();
+  else if (a === "hsync") syncSteps(true);
   else if (a === "parq") { state.profile.parq = el.dataset.v; save(); render(); }
   else if (a === "rest") startRest(Number(el.dataset.s));
   else if (a === "restoff") stopRest();
@@ -1823,6 +1825,61 @@ function updateBanner() {
 }
 if ("serviceWorker" in navigator && /github\.io$/.test(location.hostname)) { navigator.serviceWorker.register("sw.js").catch(() => {}); }
 
+/* ---------- Automatic steps (Android app): Samsung Health → Health Connect → Chop Count ---------- */
+const HEALTH = IS_NATIVE && window.Capacitor.Plugins ? window.Capacitor.Plugins.Health : null;
+const HC_STORE = "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata";
+let stepSyncAt = 0, stepMsg = "", stepNeedsInstall = false;
+function hcFlag() { try { return localStorage.getItem("chopcount.hc") === "1"; } catch (e) { return false; } }
+function setHcFlag(v) { try { if (v) localStorage.setItem("chopcount.hc", "1"); else localStorage.removeItem("chopcount.hc"); } catch (e) {} }
+function healthOn() { return !!HEALTH && hcFlag(); }
+function stepSourceHTML(steps) {
+  const manual = `<div class="row"><input type="number" id="steps-in" inputmode="numeric" min="0" max="100000" step="100" value="${steps || ""}" placeholder="Steps so far" aria-label="Steps today"><button class="btn" data-act="savesteps">Save</button></div>`;
+  if (!HEALTH) return manual;
+  if (!hcFlag()) return `<button class="btn block" data-act="hconnect">Count my steps automatically</button>
+    ${stepMsg ? `<p class="small err" style="margin:8px 0 0">${esc(stepMsg)}</p>` : ""}
+    ${stepNeedsInstall ? `<a class="btn line sm" href="${HC_STORE}" target="_blank" rel="noopener" style="text-decoration:none;margin-top:8px;display:inline-block">Get Health Connect</a>` : ""}
+    <details style="margin-top:10px"><summary class="small muted">Or type them in</summary><div style="margin-top:8px">${manual}</div></details>`;
+  const at = stepSyncAt ? new Date(stepSyncAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
+  return `<div class="row between"><span class="small"><span class="pill ok">Automatic</span> ${stepMsg ? `<span class="err">${esc(stepMsg)}</span>` : at ? `<span class="muted">from your phone, updated ${at}</span>` : `<span class="muted">reading…</span>`}</span><button class="btn line sm" data-act="hsync">Refresh</button></div>`;
+}
+async function healthConnect() {
+  stepMsg = ""; stepNeedsInstall = false;
+  try {
+    const av = await HEALTH.isAvailable();
+    if (!av || !av.available) {
+      stepNeedsInstall = true;
+      stepMsg = /update/i.test((av && av.reason) || "") ? "Health Connect needs an update. Update it from the Play Store, then tap again." : "This phone needs the free Health Connect app from Google first. Install it, then tap again.";
+      render(); return;
+    }
+    const r = await HEALTH.requestAuthorization({ read: ["steps"], write: [] });
+    if (r && (r.readAuthorized || []).includes("steps")) { setHcFlag(true); await syncSteps(true); toast("Steps now update by themselves"); }
+    else { stepMsg = "Step access wasn't allowed. Tap again and switch Steps on."; render(); }
+  } catch (e) { stepMsg = "Couldn't open Health Connect. Try again."; render(); }
+}
+/* Reads daily step totals for the last 10 days; Health Connect merges phone and watch counts so steps aren't doubled. */
+async function syncSteps(force) {
+  if (!healthOn() || (!force && Date.now() - stepSyncAt < 60 * 1000)) return;
+  try {
+    const start = parseDay(addDays(todayStr(), -9)); start.setHours(0, 0, 0, 0);
+    const res = await HEALTH.queryAggregated({ dataType: "steps", startDate: start.toISOString(), endDate: new Date().toISOString(), bucket: "day", aggregation: "sum" });
+    let changed = false;
+    (res && res.samples || []).forEach(s => {
+      const ds = todayStr(new Date(new Date(s.startDate).getTime() + 60 * 1000)), v = Math.round(s.value || 0);
+      if (v > 0 && (!state.days[ds] || state.days[ds].steps !== v)) { ensureDay(ds).steps = v; changed = true; }
+    });
+    const hadMsg = !!stepMsg, first = !stepSyncAt; stepSyncAt = Date.now(); stepMsg = "";
+    if (changed) save();
+    if (changed || hadMsg || first || force) render();
+    return;
+  } catch (e) {
+    const m = String(e && e.message || e);
+    if (/permission|authori|security/i.test(m)) { setHcFlag(false); stepMsg = "Step access was turned off. Tap to allow it again."; }
+    else stepMsg = "Couldn't read steps just now.";
+  }
+  render();
+}
+if (HEALTH) document.addEventListener("visibilitychange", () => { if (!document.hidden) syncSteps(); });
+
 /* ---------- Boot ---------- */
 (function boot() {
   const local = readLocal();
@@ -1831,6 +1888,7 @@ if ("serviceWorker" in navigator && /github\.io$/.test(location.hostname)) { nav
   render();
   connectCloud();
   checkUpdate();
+  syncSteps(true);
 })();
 </script>
 </body>
