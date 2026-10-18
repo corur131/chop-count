@@ -209,6 +209,9 @@ textarea { min-height: 90px; font-size: .8rem; font-family: ui-monospace, Menlo,
 .protline { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
 .exctl { margin-top: 8px; gap: 6px; }
 .exctl .chip { font-size: .78rem; padding: 6px 10px; }
+.obsteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.obsteps span { font-size: .75rem; font-weight: 700; color: var(--muted); border-top: 3px solid var(--surface-2); padding-top: 6px; }
+.obsteps span.on { color: var(--green); border-color: var(--green); }
 .kvs { display: grid; gap: 8px; }
 .kv { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; font-size: .9rem; }
 .kv b { font-weight: 600; }
@@ -1168,15 +1171,20 @@ const PARQ = [
 function trainerFields(p) {
   p = p || {};
   const c = tcfg(p), radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
-  return `<div class="grid">
-    <div class="field"><span>Body goal</span><div id="pf-bg-wrap">${bodyGoalList(p.sex || "f", p.bodyGoal)}</div></div>
+  return `<div class="grid">${goalPart(p)}${trainPart(p)}</div>`;
+}
+function goalPart(p) {
+  const c = tcfg(p), radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
+  return `<div class="field"><span>Body goal</span><div id="pf-bg-wrap">${bodyGoalList(p.sex || "f", p.bodyGoal)}</div></div>
     <label class="field"><span>Target weight (kg, optional)</span><input type="number" id="pf-target" inputmode="decimal" min="30" max="250" step="0.5" value="${p.targetKg || ""}" placeholder="e.g. 68"></label>
-    <div class="field"><span>Pace</span><div class="seg" role="radiogroup">${Object.entries(PACES).map(([k, l]) => radio("pf-pace", k, l, c.pace === k)).join("")}</div></div>
-    <div class="field"><span>Where you train</span><div class="opts">${Object.entries(PLACES).map(([k, l]) => radio("pf-place", k, l, c.place === k)).join("")}</div></div>
+    <div class="field"><span>Pace</span><div class="seg" role="radiogroup">${Object.entries(PACES).map(([k, l]) => radio("pf-pace", k, l, c.pace === k)).join("")}</div></div>`;
+}
+function trainPart(p) {
+  const c = tcfg(p), radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
+  return `<div class="field"><span>Where you train</span><div class="opts">${Object.entries(PLACES).map(([k, l]) => radio("pf-place", k, l, c.place === k)).join("")}</div></div>
     <label class="row" style="gap:10px;align-items:flex-start"><input type="checkbox" id="pf-bar" ${p.bar ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>I have a pull-up bar</b><br><span class="muted">Adds pull-ups, chin-ups and slow lowering pull-ups for your back. A door-frame bar works.</span></span></label>
     <div class="field"><span>Training days a week</span><div class="seg" role="radiogroup">${[2, 3, 4, 5].map(n => radio("pf-days", n, n, c.days === n)).join("")}</div></div>
-    <label class="field"><span>Lifting experience</span><select id="pf-level">${Object.entries(LEVELS).map(([k, l]) => `<option value="${k}" ${c.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
-  </div>`;
+    <label class="field"><span>Lifting experience</span><select id="pf-level">${Object.entries(LEVELS).map(([k, l]) => `<option value="${k}" ${c.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>`;
 }
 function bodyGoalList(sex, cur) {
   const own = BODY_GOALS[sex === "m" ? "m" : "f"], other = BODY_GOALS[sex === "m" ? "f" : "m"];
@@ -1310,15 +1318,18 @@ function render() {
 }
 
 /* ---------- Profile form (onboarding + edit) ---------- */
-function profileFields(p, edit) {
+function profileFields(p, edit, part) {
   p = p || {};
+  const show = k => !part || part === k;
   const actSel = actNew(p) ? Number(p.act) : (ACT_OLD[p.act] || 1.2);
   const radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
   const hcm = p.heightCm || "";
   const ft = hcm ? Math.floor(hcm / 30.48) : "", inch = hcm ? Math.round((hcm / 2.54) % 12) : "";
+  if (part === "goal") return `<div class="grid"><div class="field"><span>Weight goal</span><div class="seg" role="radiogroup">${radio("pf-goal", "gain", "Gain weight", p.goal === "gain")}${radio("pf-goal", "lose", "Lose weight", p.goal === "lose")}${radio("pf-goal", "maintain", "Stay the same", p.goal === "maintain")}</div></div>${goalPart(p)}</div>`;
+  if (part === "train") return `<div class="grid">${trainPart(p)}</div>`;
   return `<div class="grid">
     <label class="field"><span>Your name</span><input type="text" id="pf-name" maxlength="30" value="${esc(p.name || "")}" placeholder="e.g. Shaka" autocomplete="given-name"></label>
-    <div class="field"><span>Weight goal</span><div class="seg" role="radiogroup">${radio("pf-goal", "gain", "Gain weight", p.goal === "gain")}${radio("pf-goal", "lose", "Lose weight", p.goal === "lose")}${radio("pf-goal", "maintain", "Stay the same", p.goal === "maintain")}</div></div>
+    ${show("goal") && part !== "you" ? `<div class="field"><span>Weight goal</span><div class="seg" role="radiogroup">${radio("pf-goal", "gain", "Gain weight", p.goal === "gain")}${radio("pf-goal", "lose", "Lose weight", p.goal === "lose")}${radio("pf-goal", "maintain", "Stay the same", p.goal === "maintain")}</div></div>` : ""}
     <div class="field"><span>Sex (used in the calorie formula)</span><div class="seg" role="radiogroup">${radio("pf-sex", "m", "Male", p.sex === "m")}${radio("pf-sex", "f", "Female", p.sex === "f")}</div></div>
     <div class="fields">
       <label class="field"><span>Age (years)</span><input type="number" id="pf-age" inputmode="numeric" min="13" max="90" value="${p.age || ""}"></label>
@@ -1330,24 +1341,30 @@ function profileFields(p, edit) {
     </div>
     <label class="field"><span>How active is your day? (not counting workouts; the app adds those)</span><select id="pf-act">${ACT.map(a => `<option value="${a.k}" ${actSel === a.k ? "selected" : ""}>${a.label} — ${a.sub}</option>`).join("")}</select></label>
     <label class="field"><span>Daily food budget in naira (optional)</span><input type="number" id="pf-budget" inputmode="numeric" min="0" max="1000000" step="100" value="${p.budget || ""}" placeholder="e.g. 3000"></label>
-    <h3 style="margin-top:6px">Training</h3>
-    ${trainerFields(p)}
+    ${part === "you" ? "" : `<h3 style="margin-top:6px">Training</h3>${trainerFields(p)}`}
   </div>`;
 }
-function readProfile() {
+function readProfile(base) {
   const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
   const r = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; };
-  let heightCm;
-  if (obUnit === "cm") heightCm = Number(v("pf-h"));
-  else heightCm = Math.round((Number(v("pf-ft")) * 12 + Number(v("pf-in") || 0)) * 2.54);
-  const p = { name: v("pf-name"), goal: r("pf-goal"), sex: r("pf-sex"), age: Number(v("pf-age")), weightKg: document.getElementById("pf-w") ? Number(v("pf-w")) : (state.profile ? latestWeight(state.profile) : 0), heightCm, act: Number(v("pf-act")), actV: 2, budget: Number(v("pf-budget")) || 0 };
+  const has = id => !!document.getElementById(id), hasR = name => !!document.querySelector(`input[name="${name}"]`);
+  const p = Object.assign({}, base || {});
+  if (has("pf-name")) p.name = v("pf-name");
+  if (hasR("pf-goal")) p.goal = r("pf-goal");
+  if (hasR("pf-sex")) p.sex = r("pf-sex");
+  if (has("pf-age")) p.age = Number(v("pf-age"));
+  if (has("pf-w")) p.weightKg = Number(v("pf-w")); else if (state.profile) p.weightKg = latestWeight(state.profile);
+  if (has("pf-h")) p.heightCm = Number(v("pf-h"));
+  else if (has("pf-ft")) p.heightCm = Math.round((Number(v("pf-ft")) * 12 + Number(v("pf-in") || 0)) * 2.54);
+  if (has("pf-act")) { p.act = Number(v("pf-act")); p.actV = 2; }
+  if (has("pf-budget")) p.budget = Number(v("pf-budget")) || 0;
   Object.assign(p, readTrainer());
   const missing = [];
-  if (!p.goal) missing.push("weight goal");
   if (!p.sex) missing.push("sex");
   if (!(p.age >= 13 && p.age <= 90)) missing.push("age (13–90)");
   if (!(p.weightKg >= 30 && p.weightKg <= 250)) missing.push("weight (30–250 kg)");
   if (!(p.heightCm >= 120 && p.heightCm <= 230)) missing.push("height (120–230 cm)");
+  if (!p.goal) missing.push("weight goal");
   if (!p.bodyGoal) missing.push("body goal");
   const te = targetErr(p); if (te) missing.push(te);
   return { p, missing };
@@ -1359,18 +1376,24 @@ function targetErr(p) {
   if (p.weightKg && p.goal === "gain" && tg <= p.weightKg) return "a target weight above your current weight (you chose Gain weight)";
   return "";
 }
+let obStep = 0, obDraft = { act: 1.2, actV: 2 };
+const OB_STEPS = [["you", "About you"], ["goal", "Your goal"], ["train", "Your training"]];
+const OB_NEED = { you: ["sex", "age", "weight (", "height"], goal: ["weight goal", "body goal", "a target", "target"], train: [] };
 function onboardingHTML() {
+  const [part, label] = OB_STEPS[obStep];
   return `<main class="wrap"><div class="ob">
     <div class="ob-hero"><div class="brand"><div class="brand-mark" aria-hidden="true"><span></span></div><span class="eyebrow">Chop Count</span></div>
-      <h1>Count your chop, hit your goal.</h1>
-      <p class="muted">Calories and macros for eba, egusi, jollof, suya, shawarma and 175 more foods Nigerians eat, plus water, steps and a workout plan built around your goal.</p></div>
+      ${obStep === 0 ? `<h1>Count your chop, hit your goal.</h1>
+      <p class="muted">Calories and macros for eba, egusi, jollof, suya, shawarma and 175 more foods Nigerians eat, plus water, steps and a personal trainer built around your goal.</p>` : `<h1>${label}</h1>`}</div>
+    <div class="obsteps" aria-label="Step ${obStep + 1} of 3">${OB_STEPS.map((s, i) => `<span class="${i <= obStep ? "on" : ""}">${i + 1}. ${s[1]}</span>`).join("")}</div>
     <div class="grid">
-      <div class="card">${profileFields({})}</div>
-      <div class="preview" id="preview"></div>
+      <div class="card">${profileFields(obDraft, false, part)}</div>
+      ${obStep > 0 ? `<div class="preview" id="preview"></div>` : ""}
       <p class="err" id="ob-err" hidden></p>
-      <button class="btn block" data-act="start">Start tracking</button>
+      <div class="row" style="gap:10px">${obStep > 0 ? `<button class="btn ghost" data-act="obback">Back</button>` : ""}<button class="btn block" data-act="${obStep < 2 ? "obnext" : "start"}" style="flex:1">${obStep < 2 ? "Next" : "Start tracking"}</button></div>
     </div></div></main>`;
 }
+function obMissing(part) { const { p, missing } = readProfile(obDraft); return { p, miss: missing.filter(m => OB_NEED[part].some(k => m.startsWith(k))) }; }
 function previewInner(p, missing) {
   if (missing.length) return `<span class="eyebrow muted">Your daily targets</span><p class="muted small">Fill in ${missing.join(", ")} to see your targets.</p>`;
   const t = targets(Object.assign({ startDate: todayStr(), calAdjust: 0 }, p), p.weightKg);
@@ -1378,7 +1401,7 @@ function previewInner(p, missing) {
     <div class="stats"><div class="stat"><span class="small muted">Calories</span><b class="num">${fmt(t.cal)}</b></div><div class="stat"><span class="small muted">Protein</span><b class="num">${t.protein} g</b></div><div class="stat"><span class="small muted">Water</span><b class="num">${fmt1(t.water / 1000)} L</b></div></div>
     <p class="small muted">You burn about ${fmt(t.tdee)} kcal a day. ${p.goal === "maintain" ? "You'll eat about the same." : t.floored ? `Your target stays at the ${fmt(t.floor)} kcal safe minimum, which loses about ${fmt1(Math.abs(t.rate))} kg a week.` : `You'll eat about ${fmt(Math.abs(t.delta))} ${t.delta > 0 ? "more" : "less"} than that to ${p.goal} about ${fmt1(Math.abs(t.rate))} kg a week.`}</p>`;
 }
-function updatePreview() { const el = $("#preview"); if (!el) return; const { p, missing } = readProfile(); el.innerHTML = previewInner(p, missing); }
+function updatePreview() { const el = $("#preview"); if (!el) return; const { p, missing } = readProfile(state.profile ? state.profile : obDraft); el.innerHTML = previewInner(p, missing); }
 
 /* ---------- Today ---------- */
 function ringSVG(eaten, target) {
@@ -1403,6 +1426,14 @@ function weighCard() {
   return `<section class="card"><div class="card-head"><h2>Morning weigh-in</h2><span class="pill ${week >= 3 ? "ok" : ""}">${Math.min(week, 7)} of 3 this week</span></div>
     <div class="row"><input type="number" id="w-in" inputmode="decimal" min="30" max="250" step="0.1" placeholder="Weight (kg)" value="${w ? w.kg : ""}" aria-label="Today's weight in kg"><button class="btn" data-act="saveweight">${w ? "Update" : "Log"}</button></div>
     <p class="small muted" style="margin:8px 0 0">After the toilet, before eating. 3+ a week lets the app measure your real metabolism.</p></section>`;
+}
+/* Weekly backup nudge: data saved only on the phone is lost if the app is uninstalled. */
+function backupCard() {
+  if (storeMode === "cloud" || viewDate !== todayStr()) return "";
+  const p = state.profile, last = state.lastBackup || p.startDate, snooze = state.backupSnooze;
+  if (daysBetween(last, todayStr()) < 7 || (snooze && daysBetween(snooze, todayStr()) < 3)) return "";
+  return `<section class="card suggest"><div class="row between" style="align-items:start;gap:10px"><div><b>Back up your log</b><p class="small muted" style="margin:2px 0 0">${state.lastBackup ? `Last backup ${daysBetween(state.lastBackup, todayStr())} days ago.` : "No backup yet."} Uninstalling the app or clearing its data erases everything. Copy the code and send it to yourself on WhatsApp.</p></div></div>
+    <div class="wrapflex" style="margin-top:10px"><button class="btn sm" data-act="copybackup">Copy backup code</button><button class="btn ghost sm" data-act="backuplater">Later</button></div></section>`;
 }
 function todayHTML() {
   const p = state.profile, t = targets(), d = getDay(viewDate) || { items: [], water: 0, steps: 0, wd: false }, tot = dayTotals(viewDate);
@@ -1430,6 +1461,7 @@ function todayHTML() {
   const heroLine = tot.kcal < 1 ? "Log your first meal to start the day." : left >= 0 ? `${fmt(left)} kcal left` : `${fmt(-left)} kcal over target`;
   return `${topbar(p.name ? esc(p.name) : "Today", true)}
   ${updateBanner()}
+  ${backupCard()}
   <div class="grid two"><div class="col">
     <section class="card"><div class="hero"><div class="ring">${ringSVG(tot.kcal, t.cal)}<div class="center"><span class="big num">${fmt(tot.kcal)}</span><span class="small muted">of ${fmt(t.cal)} kcal</span></div></div>
       <div class="macros"><p class="small"><b>${heroLine}</b></p>${macroBar("Protein", tot.p, t.protein, "var(--prot)")}${macroBar("Carbs", tot.c, t.carbs, "var(--carb)")}${macroBar("Fat", tot.f, t.fat, "var(--fat)")}</div></div>
@@ -1749,6 +1781,36 @@ function suggestion(t) {
   if (Math.abs(rate) > 0.3) return { delta: rate > 0 ? -150 : 150, text: `Your weight is moving ${r}. Adjust by ${rate > 0 ? "−" : "+"}150 kcal a day to hold steady.` };
   return { ok: true, text: `Weight steady (${r}). Keep the plan as it is.` };
 }
+/* Strength over time: best set per day for each exercise. Weighted moves use estimated max (Epley: kg × (1 + reps/30)); body-weight moves use best reps. */
+function strengthData() {
+  const by = {};
+  Object.keys(state.days).sort().forEach(ds => {
+    const lg = state.days[ds].lg; if (!lg) return;
+    Object.entries(lg).forEach(([key, sets]) => {
+      const id = key.split("@")[0], d = EXD[id]; if (!d || !Array.isArray(sets)) return;
+      let best = 0, kgUsed = false;
+      sets.forEach(s => { if (!s || !(s.r > 0)) return; if (s.kg > 0) { kgUsed = true; best = Math.max(best, s.kg * (1 + s.r / 30)); } else if (!kgUsed) best = Math.max(best, s.r); });
+      if (!best) return;
+      const o = by[id] = by[id] || { id, name: d[0], kg: false, pts: [] };
+      if (kgUsed) { if (!o.kg) o.pts = []; o.kg = true; } else if (o.kg) return;
+      o.pts.push([ds, best]);
+    });
+  });
+  return Object.values(by).filter(o => o.pts.length).sort((a, b) => b.pts.length - a.pts.length || (b.pts[b.pts.length - 1][0] > a.pts[a.pts.length - 1][0] ? 1 : -1)).slice(0, 6);
+}
+function sparkSVG(pts) {
+  const W = 90, H = 26, vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), span = hi - lo || 1;
+  const xy = pts.map((p, i) => [pts.length === 1 ? W / 2 : i / (pts.length - 1) * (W - 4) + 2, H - 3 - (p[1] - lo) / span * (H - 6)]);
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><path d="M${xy.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L")}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/><circle cx="${xy[xy.length - 1][0]}" cy="${xy[xy.length - 1][1]}" r="2.5" fill="var(--green)"/></svg>`;
+}
+function strengthCard() {
+  const data = strengthData();
+  if (!data.length) return `<section class="card"><h2>Strength</h2><p class="small muted" style="margin:6px 0 0">Log your sets in Workout and your progress on each lift shows here.</p></section>`;
+  return `<section class="card"><div class="card-head"><h2>Strength</h2><span class="small muted">first → latest</span></div>
+    <div class="checklist">${data.map(o => { const a = o.pts[0][1], b = o.pts[o.pts.length - 1][1], ch = a ? Math.round((b - a) / a * 100) : 0;
+      return `<div class="check" style="grid-template-columns:minmax(0,1fr) auto auto;gap:10px"><span><b>${esc(o.name)}</b><br><span class="small muted">${o.kg ? `est. max ${fmt1(a)} → ${fmt1(b)} kg` : `best set ${fmt(a)} → ${fmt(b)} ${EXD[o.id][2] === "time" ? "s" : "reps"}`}</span></span>${sparkSVG(o.pts)}<b class="num small" style="color:${ch > 0 ? "var(--green)" : "inherit"}">${o.pts.length > 1 ? (ch >= 0 ? "+" : "") + ch + "%" : "new"}</b></div>`; }).join("")}</div>
+    <p class="small muted" style="margin:10px 0 0">Weighted lifts show estimated one-rep max from your best set, so a heavier weight or more reps both count.</p></section>`;
+}
 function progressHTML() {
   const p = state.profile, t = targets(), ws = state.weights, sg = suggestion(t);
   const startW = ws.length ? ws[0].kg : p.weightKg, nowW = latestWeight(p), change = nowW - startW;
@@ -1768,6 +1830,7 @@ function progressHTML() {
     <section class="card"><div class="card-head"><h2>Last 7 days</h2><span class="small muted">green = on target</span></div>${calChart(t)}
       <div class="stats" style="margin-top:12px"><div class="stat"><span class="small muted">Avg kcal</span><b class="num">${fmt(avg("kcal"))}</b></div><div class="stat"><span class="small muted">Avg protein</span><b class="num">${fmt(avg("p"))} g</b></div><div class="stat"><span class="small muted">Streak</span><b class="num">${streak(t)} d</b></div></div>
       <p class="small muted" style="margin:10px 0 0">Averages count only days with food logged.</p></section>
+    ${strengthCard()}
   </div></div>`;
 }
 
@@ -1846,8 +1909,13 @@ document.addEventListener("click", async ev => {
   const el = ev.target.closest("[data-act]");
   if (!el) return;
   const a = el.dataset.act;
+  if (a === "obnext" || a === "obback") {
+    const part = OB_STEPS[obStep][0], { p, miss } = obMissing(part);
+    if (a === "obnext" && miss.length) { const e = $("#ob-err"); e.textContent = "Please fill in: " + miss.join(", ") + "."; e.hidden = false; return; }
+    obDraft = p; obStep = Math.max(0, Math.min(2, obStep + (a === "obnext" ? 1 : -1))); render(); window.scrollTo(0, 0); return;
+  }
   if (a === "start") {
-    const { p, missing } = readProfile();
+    const { p, missing } = readProfile(obDraft);
     if (missing.length) { const e = $("#ob-err"); e.textContent = "Please fill in: " + missing.join(", ") + "."; e.hidden = false; return; }
     state.profile = Object.assign(p, { startDate: todayStr(), trainStart: todayStr(), calAdjust: 0, lastAdjust: null });
     state.weights = [{ d: todayStr(), kg: p.weightKg }];
@@ -1909,7 +1977,7 @@ document.addEventListener("click", async ev => {
   } else if (a === "adjust") {
     state.profile.calAdjust = (state.profile.calAdjust || 0) + Number(el.dataset.d); state.profile.lastAdjust = todayStr(); save(); render(); toast("Daily target updated");
   } else if (a === "saveprofile") {
-    const { p, missing } = readProfile();
+    const { p, missing } = readProfile(state.profile);
     if (missing.length) { const e = $("#ob-err"); e.textContent = "Please fill in: " + missing.join(", ") + "."; e.hidden = false; return; }
     const old = state.profile;
     if (p.goal !== old.goal) { old.calAdjust = 0; old.lastAdjust = null; old.startDate = todayStr(); }
@@ -1919,7 +1987,8 @@ document.addEventListener("click", async ev => {
     state.profile = Object.assign(old, p); editProfile = false; save(); render(); window.scrollTo(0, 0); toast("Details saved");
   } else if (a === "copybackup") {
     const code = "CC1." + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-    try { await navigator.clipboard.writeText(code); toast("Backup code copied"); }
+    state.lastBackup = todayStr(); save(); if (current === "today") render();
+    try { await navigator.clipboard.writeText(code); toast("Backup code copied. Paste it in WhatsApp or Notes."); }
     catch (e) { const ta = $("#restore-in"); ta.value = code; ta.select(); toast("Code shown below. Copy it from there."); }
   } else if (a === "restore") {
     const raw = ($("#restore-in").value || "").trim();
@@ -1931,7 +2000,7 @@ document.addEventListener("click", async ev => {
     } catch (e) { restoreMsg = "That code isn't a Chop Count backup. Copy the whole code, starting with CC1."; render(); }
   } else if (a === "askreset") { confirmReset = true; render(); }
   else if (a === "cancelreset") { confirmReset = false; render(); }
-  else if (a === "reset") { state = blank(); syncCustom(); plate = []; confirmReset = false; save(); current = "today"; render(); }
+  else if (a === "reset") { obStep = 0; obDraft = { act: 1.2, actV: 2 }; state = blank(); syncCustom(); plate = []; confirmReset = false; save(); current = "today"; render(); }
   else if (a === "usecombo") {
     const c = COMBOS.find(x => x.id === el.dataset.id); if (!c) return;
     comboAt(c, Number(el.dataset.s)).items.forEach(i => plate.push(i));
@@ -1970,6 +2039,7 @@ document.addEventListener("click", async ev => {
     const sid = k.split(".")[0], i = Number(k.split(".")[1]), pref = SESS[sid][2][i][4] || 0;
     state.swap[k] = ((cur != null ? cur : pref) + 1) % Number(el.dataset.n); save(); render();
   }
+  else if (a === "backuplater") { state.backupSnooze = todayStr(); save(); render(); }
   else if (a === "editprofile") { editProfile = true; render(); }
   else if (a === "canceledit") { editProfile = false; render(); }
   else if (a === "parq") { state.profile.parq = el.dataset.v; save(); render(); }
@@ -2011,8 +2081,8 @@ document.addEventListener("change", ev => {
   else if (t.name === "slot") { logSlot = t.value; render(); }
   else if (t.name === "oil") { sheetState.oil = t.value; drawSheet(); }
   else if (t.name === "pf-hu") {
-    const { p } = readProfile(); obUnit = t.value;
-    if (!state.profile) { $("#app").innerHTML = onboardingHTML(); fill(p); updatePreview(); }
+    const { p } = readProfile(state.profile || obDraft); obUnit = t.value;
+    if (!state.profile) { obDraft = p; $("#app").innerHTML = onboardingHTML(); updatePreview(); }
     else { render(); fill(p); }
   } else if (t.closest && t.closest(".ob")) updatePreview();
 });
