@@ -1179,6 +1179,9 @@ function meHTML() {
       </div>
       <p class="small muted" style="margin:10px 0 0">Based on ${fmt1(t.w)} kg, your latest weigh-in. Targets update when you log a new weight.</p>
       <label class="row" style="margin-top:12px;align-items:flex-start;gap:10px"><input type="checkbox" id="use-measured" ${p.useMeasured !== false ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>Use my measured burn</b><br><span class="muted">Once 14+ days of logging give good confidence, targets follow your real burn instead of the formula.</span></span></label></section>
+    ${IS_NATIVE ? `<section class="card"><div class="card-head"><h2>App version</h2><span class="pill">1.${APP_BUILD}</span></div>
+      ${updateInfo ? `<p class="small" style="margin:0 0 10px">Version 1.${updateInfo.build} is ready.</p><a class="btn sm" href="${esc(updateInfo.apk)}" target="_blank" rel="noopener" style="text-decoration:none">Download update</a>`
+      : `<div class="row between"><span class="small muted">${esc(updateMsg)}</span><button class="btn line sm" data-act="checkupdate">Check for updates</button></div>`}</section>` : ""}
     <section class="card"><h2>Saving</h2><p class="small" style="margin:6px 0 0">${storeMode === "cloud" ? '<span class="pill ok">Saved to your Claude account</span> Your log follows you to any device where you open Chop Count signed in.' : '<span class="pill warn">Saved on this phone only</span> Clearing the browser can erase it. Copy a backup code now and then.'}</p></section>
   </div><div class="col">
     <section class="card"><h2 style="margin-bottom:12px">Your details</h2>${profileFields(p)}<p class="err" id="ob-err" hidden></p><button class="btn block" data-act="saveprofile" style="margin-top:14px">Save details</button></section>
@@ -1317,6 +1320,7 @@ document.addEventListener("click", async ev => {
     const [gone] = state.customFoods.splice(ix, 1); syncCustom(); save(); closeSheet(); render();
     toast("Deleted " + gone.name, () => { state.customFoods.splice(ix, 0, gone); syncCustom(); save(); render(); });
   }
+  else if (a === "checkupdate") checkUpdate(true);
   else if (a === "moresug") { suggestSkip += 3; render(); }
   else if (a === "undo") { const f = undoFn; $("#toast").hidden = true; undoFn = null; if (f) f(); }
 });
@@ -1374,14 +1378,21 @@ const APP_BUILD = Number("__BUILD__") || 0;
 const UPDATE_URL = "https://corur131.github.io/chop-count/version.json";
 let updateInfo = null;
 const IS_NATIVE = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
-async function checkUpdate() {
+let lastUpdateCheck = 0, updateMsg = "";
+/* Checks at start, whenever the app comes back to the screen (at most every 10 min), and from Me → Check for updates. */
+async function checkUpdate(manual) {
   if (!IS_NATIVE || !APP_BUILD) return;
+  lastUpdateCheck = Date.now();
+  if (manual) { updateMsg = "Checking…"; render(); }
   try {
     const r = await fetch(UPDATE_URL + "?t=" + Date.now(), { cache: "no-store" });
     const v = await r.json();
-    if (v && v.build > APP_BUILD && v.apk) { updateInfo = v; render(); }
-  } catch (e) {}
+    if (v && v.build > APP_BUILD && v.apk) { updateInfo = v; updateMsg = ""; }
+    else if (manual) updateMsg = "You have the latest version.";
+  } catch (e) { if (manual) updateMsg = "Couldn't check. Connect to the internet and try again."; }
+  render();
 }
+document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastUpdateCheck > 10 * 60 * 1000) checkUpdate(); });
 function updateBanner() {
   if (!updateInfo) return "";
   return `<section class="card suggest"><div class="row between"><div><b>New version available</b><p class="small muted" style="margin:2px 0 0">Download it, then install over this app. Your data stays.</p></div>
