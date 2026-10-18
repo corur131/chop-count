@@ -206,6 +206,9 @@ textarea { min-height: 90px; font-size: .8rem; font-family: ui-monospace, Menlo,
 .figbox .row { margin-top: 5px; font-size: .78rem; }
 .figbox a { color: var(--green); font-weight: 700; text-decoration: none; }
 
+.kvs { display: grid; gap: 8px; }
+.kv { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; font-size: .9rem; }
+.kv b { font-weight: 600; }
 .coach { margin: 6px 0 0; padding: 8px 10px; background: var(--surface-2); border-radius: 10px; }
 .coachlist { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .parq { padding-left: 20px; margin: 10px 0; display: grid; gap: 6px; }
@@ -401,12 +404,21 @@ const NOT_OILY = new Set(["pepper_soup", "ewedu", "nsala", "gizdodo"]);
 const OIL = { light: 0.7, normal: 1, heavy: 1.3 };
 const SLOTS = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snacks"]];
 const ACT = [
-  { k: 1.2, label: "Sitting most of the day", sub: "Desk work or study, little walking" },
-  { k: 1.375, label: "Lightly active", sub: "Exercise 1–3 days a week" },
-  { k: 1.55, label: "Moderately active", sub: "Exercise 3–5 days a week" },
-  { k: 1.725, label: "Very active", sub: "Exercise 6–7 days a week" },
-  { k: 1.9, label: "Physical job and training", sub: "On your feet all day, plus workouts" }
+  { k: 1.2, label: "Sitting most of the day", sub: "Desk work, study, little walking" },
+  { k: 1.3, label: "Some walking", sub: "Errands, short trips, light chores" },
+  { k: 1.4, label: "On your feet most of the day", sub: "Trader, nurse, teacher, shop work" },
+  { k: 1.55, label: "Physical work", sub: "Building, farming, carrying loads" }
 ];
+/* Before v1.7 the activity list included exercise; those older choices already count workouts. */
+const ACT_OLD = { 1.375: 1.3, 1.55: 1.4, 1.725: 1.55, 1.9: 1.55 };
+function actNew(p) { return p.actV === 2 || !p.act || Number(p.act) === 1.2; }
+function actLabel(p) { const a = ACT.find(x => x.k === Number(p.act)); return a && actNew(p) ? a.label : "Activity × " + p.act + " (includes exercise)"; }
+/* Workout energy, averaged per day: strength ≈ 5 MET for ~50 min, brisk walk ≈ 4.3 MET for 30 min, minus the 1 MET already counted at rest. */
+function trainKcal(p, w) {
+  if (!actNew(p)) return 0;
+  const c = tcfg(p), walks = p.goal === "lose" ? Math.max(0, 6 - c.days) : 0;
+  return Math.round((c.days * 4 * w * 50 / 60 + walks * 3.3 * w * 0.5) / 7 / 10) * 10;
+}
 const GOALS = { gain: "Gain weight", lose: "Lose weight", maintain: "Stay the same" };
 
 /* Default prices: naira per typical portion, cooked at home (soups exclude meat/fish).
@@ -671,7 +683,8 @@ function latestWeight(p) { const w = state.weights; return w.length ? w[w.length
 function weeksSince(start) { if (!start) return 0; return Math.max(0, Math.floor(daysBetween(start, todayStr()) / 7)); }
 function formulaBurn(p, w) {
   const bmr = 10 * w + 6.25 * p.heightCm - 5 * p.age + (p.sex === "m" ? 5 : -161);
-  return { bmr, tdee: bmr * p.act };
+  const train = trainKcal(p, w);
+  return { bmr, tdee: bmr * p.act + train, train };
 }
 /* Measured burn: average intake on fully logged days minus energy stored or lost,
    from the least-squares weight trend over the last 28 days (7,700 kcal per kg). */
@@ -728,7 +741,7 @@ function targets(p, wOverride) {
   const carbs = Math.max(0, Math.round((cal - protein * 4 - fat * 9) / 4));
   const water = Math.max(1500, Math.round(w * 35 / 250) * 250);
   const steps = state.profile ? stepGoal(todayStr()).goal : Math.round(Math.min(10000, Math.max(6000, p.baseSteps || 4000)) / 500) * 500;
-  return { w, bmr: Math.round(bmr), tdee: Math.round(tdee), formulaTdee: Math.round(fb.tdee), source, delta, planned, rate, refW, cal, floor, floored, protein, fat, carbs, water, steps };
+  return { w, train: fb.train, bmr: Math.round(bmr), tdee: Math.round(tdee), formulaTdee: Math.round(fb.tdee), source, delta, planned, rate, refW, cal, floor, floored, protein, fat, carbs, water, steps };
 }
 
 /* ---------- Days ---------- */
@@ -900,7 +913,8 @@ function sessionFor(sid, ds) {
     if ((d[2] === "bw" || d[2] === "bp") && !fl.includes("c")) reps = homeReps(reps);
     const timed = d[2] === "time", uni = /Bulgarian|Single-leg|Step-ups|lunges|kickback|Side-lying|Dead bug|Dumbbell row/i.test(d[0]);
     const rest = restSec(fl, reps);
-    return { key: sid + "." + i, id, n: d[0], fig: d[1], kind: d[2], t: d[3], harder: d[4] || "", sets, reps, timed, rest, main: fl.includes("p"),
+    /* History is keyed by exercise + rep range, so switching home/gym or sessions never reuses another exercise's numbers. */
+    return { key: id + "@" + reps, id, n: d[0], fig: d[1], kind: d[2], t: d[3], harder: d[4] || "", sets, reps, timed, rest, main: fl.includes("p"),
       d: `${sets} × ${reps.replace("-", "–")}${timed ? " s" : ""}${uni && !timed ? " each side" : ""}` };
   });
   const rir = deload ? "3–4" : (c.level === "new" && wk <= 2) ? "3" : RIR[c.level];
@@ -1022,9 +1036,14 @@ function goalCard(t) {
       ${g.lowWarn ? `<p class="small" style="margin:0 0 6px;color:var(--warn)">${fmt1(g.target)} kg is under a healthy weight for your height (BMI 18.5 = ${fmt1(g.minW)} kg), so the plan stops at ${fmt1(g.goalW)} kg.</p>` : ""}
       ${t.floored ? `<p class="small muted" style="margin:0 0 6px">Your calories are at the safe minimum, so the pace is slower than planned. Extra steps make up the gap.</p>` : ""}`;
   } else body = `<p class="small muted" style="margin:0">Calories match your burn. Your body changes through training: muscle up, fat slowly down, weight about the same.</p>`;
+  let split = "";
+  if (p.goal === "gain" && g.weeks && !g.reached) {
+    const gainKg = g.goalW - g.w, maxMus = Math.min(gainKg, g.weeks / 4.345 * g.muscle[1]);
+    split = `<p class="small" style="margin:6px 0 0">Honest split: of the ${fmt1(gainKg)} kg, at most about <b>${fmt1(maxMus)} kg can be muscle</b> in ${g.weeks} weeks at your level. The rest is fat, water and stored food. That's normal for a bulk; the slow pace keeps the fat part as small as possible.</p>`;
+  }
   const mus = p.goal !== "lose" || c.bg === "shape" ? `<p class="small muted" style="margin:6px 0 0">Realistic muscle gain at your level with good training: ${fmt1(g.muscle[0])}–${fmt1(g.muscle[1])} kg a month${p.goal === "lose" ? " at best while dieting; the goal is to keep and shape what you have" : ""}.</p>` : "";
   const water = p.goal === "lose" ? `<p class="small muted" style="margin:6px 0 0">The first 1–2 weeks often drop faster (water and food weight), then it settles. Judge by the trend, not one morning.</p>` : "";
-  return `<section class="card"><div class="card-head"><h2>Your goal</h2><span class="pill">${esc(bgLabel(c.bg))}</span></div><p style="margin:0 0 10px"><b>${head}</b></p>${body}${mus}${water}</section>`;
+  return `<section class="card"><div class="card-head"><h2>Your goal</h2><span class="pill">${esc(bgLabel(c.bg))}</span></div><p style="margin:0 0 10px"><b>${head}</b></p>${body}${split}${mus}${water}${goalConflict(p) ? `<p class="small" style="margin:6px 0 0;color:var(--warn)">${esc(goalConflict(p))}</p>` : ""}</section>`;
 }
 
 /* ---------- Adaptive step goal (Adams et al. 2013): 60th percentile of the last 9 days with steps logged ---------- */
@@ -1089,8 +1108,9 @@ function render() {
 }
 
 /* ---------- Profile form (onboarding + edit) ---------- */
-function profileFields(p) {
+function profileFields(p, edit) {
   p = p || {};
+  const actSel = actNew(p) ? Number(p.act) : (ACT_OLD[p.act] || 1.2);
   const radio = (name, val, label, checked) => `<label><input type="radio" name="${name}" value="${val}" ${checked ? "checked" : ""}><span>${label}</span></label>`;
   const hcm = p.heightCm || "";
   const ft = hcm ? Math.floor(hcm / 30.48) : "", inch = hcm ? Math.round((hcm / 2.54) % 12) : "";
@@ -1100,15 +1120,14 @@ function profileFields(p) {
     <div class="field"><span>Sex (used in the calorie formula)</span><div class="seg" role="radiogroup">${radio("pf-sex", "m", "Male", p.sex === "m")}${radio("pf-sex", "f", "Female", p.sex === "f")}</div></div>
     <div class="fields">
       <label class="field"><span>Age (years)</span><input type="number" id="pf-age" inputmode="numeric" min="13" max="90" value="${p.age || ""}"></label>
-      <label class="field"><span>Weight (kg)</span><input type="number" id="pf-w" inputmode="decimal" min="30" max="250" step="0.1" value="${p.weightKg || ""}"></label>
+      ${edit ? "" : `<label class="field"><span>Weight (kg)</span><input type="number" id="pf-w" inputmode="decimal" min="30" max="250" step="0.1" value="${p.weightKg || ""}"></label>`}
     </div>
     <div class="field"><span class="row between"><span>Height</span><span class="seg" style="padding:2px;font-size:.8rem">${radio("pf-hu", "cm", "cm", obUnit === "cm")}${radio("pf-hu", "ft", "ft / in", obUnit === "ft")}</span></span>
       ${obUnit === "cm" ? `<input type="number" id="pf-h" inputmode="numeric" min="120" max="230" value="${hcm}" placeholder="e.g. 175">`
       : `<div class="fields"><input type="number" id="pf-ft" inputmode="numeric" min="4" max="7" value="${ft}" placeholder="feet" aria-label="Feet"><input type="number" id="pf-in" inputmode="numeric" min="0" max="11" value="${inch}" placeholder="inches" aria-label="Inches"></div>`}
     </div>
-    <label class="field"><span>How active are you?</span><select id="pf-act">${ACT.map(a => `<option value="${a.k}" ${Number(p.act) === a.k ? "selected" : ""}>${a.label} — ${a.sub}</option>`).join("")}</select></label>
+    <label class="field"><span>How active is your day? (not counting workouts; the app adds those)</span><select id="pf-act">${ACT.map(a => `<option value="${a.k}" ${actSel === a.k ? "selected" : ""}>${a.label} — ${a.sub}</option>`).join("")}</select></label>
     <label class="field"><span>Daily food budget in naira (optional)</span><input type="number" id="pf-budget" inputmode="numeric" min="0" max="1000000" step="100" value="${p.budget || ""}" placeholder="e.g. 3000"></label>
-    <label class="field"><span>Your usual daily steps (check Samsung Health or iPhone Health)</span><input type="number" id="pf-steps" inputmode="numeric" min="0" max="40000" step="100" value="${p.baseSteps || ""}" placeholder="e.g. 4000"></label>
     <h3 style="margin-top:6px">Training</h3>
     ${trainerFields(p)}
   </div>`;
@@ -1119,7 +1138,7 @@ function readProfile() {
   let heightCm;
   if (obUnit === "cm") heightCm = Number(v("pf-h"));
   else heightCm = Math.round((Number(v("pf-ft")) * 12 + Number(v("pf-in") || 0)) * 2.54);
-  const p = { name: v("pf-name"), goal: r("pf-goal"), sex: r("pf-sex"), age: Number(v("pf-age")), weightKg: Number(v("pf-w")), heightCm, act: Number(v("pf-act")), baseSteps: Number(v("pf-steps")) || 0, budget: Number(v("pf-budget")) || 0 };
+  const p = { name: v("pf-name"), goal: r("pf-goal"), sex: r("pf-sex"), age: Number(v("pf-age")), weightKg: document.getElementById("pf-w") ? Number(v("pf-w")) : (state.profile ? latestWeight(state.profile) : 0), heightCm, act: Number(v("pf-act")), actV: 2, budget: Number(v("pf-budget")) || 0 };
   Object.assign(p, readTrainer());
   const missing = [];
   if (!p.goal) missing.push("weight goal");
@@ -1545,28 +1564,49 @@ function progressHTML() {
 }
 
 /* ---------- Me ---------- */
+let editProfile = false;
+function goalConflict(p) {
+  const bg = tcfg(p).bg, g = p.goal;
+  if (bg === "muscle" && g === "lose") return "Build muscle works best while gaining or holding weight. Losing weight? Pick “Lose fat, keep muscle”.";
+  if ((bg === "cut" || bg === "flose" || bg === "shape") && g === "gain") return `“${bgLabel(bg)}” means losing fat, but your weight goal is Gain. Change one so they match.`;
+  if (bg === "glutes" && g === "lose") return "Glutes grow slowly while losing weight. That's fine if fat loss comes first; for faster glute growth pick Stay the same.";
+  return "";
+}
 function meHTML() {
-  const p = state.profile, t = targets();
+  const p = state.profile, t = targets(), c = tcfg(p), conflict = goalConflict(p);
+  const row = (label, val) => `<div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>${label}</span><b class="num">${val}</b></div>`;
+  const kv = (k, v) => `<div class="kv"><span class="muted">${k}</span><b>${v}</b></div>`;
+  const summary = `<section class="card"><div class="card-head"><h2>${esc(p.name || "Your details")}</h2><button class="btn line sm" data-act="editprofile">Edit</button></div>
+    <div class="kvs">
+      ${kv("You", `${p.sex === "m" ? "Male" : "Female"} · ${p.age} yrs · ${p.heightCm} cm · ${fmt1(t.w)} kg`)}
+      ${kv("Day", esc(actLabel(p)))}
+      ${kv("Goal", `${GOALS[p.goal]}${p.targetKg && p.goal !== "maintain" ? ` to ${fmt1(p.targetKg)} kg` : ""} · ${esc(bgLabel(c.bg))}`)}
+      ${kv("Training", `${c.days} days ${PLACE_SHORT[c.place]} · ${esc(LEVELS[c.level].toLowerCase())}`)}
+      ${p.budget ? kv("Food budget", naira(p.budget) + " a day") : ""}
+    </div>
+    ${conflict ? `<p class="small" style="margin:10px 0 0;color:var(--warn)">${esc(conflict)}</p>` : ""}
+    <p class="small muted" style="margin:10px 0 0">Weight, steps and water are logged daily on Today.</p></section>`;
+  const editor = `<section class="card"><div class="card-head"><h2>Edit details</h2><button class="btn ghost sm" data-act="canceledit">Cancel</button></div>${profileFields(p, true)}<p class="err" id="ob-err" hidden></p><button class="btn block" data-act="saveprofile" style="margin-top:14px">Save details</button></section>`;
+  const app = `<section class="card"><div class="row between" style="flex-wrap:wrap;gap:8px"><span class="small">${IS_NATIVE ? `<b>Version 1.${APP_BUILD}</b> · ` : ""}${storeMode === "cloud" ? '<span class="pill ok">Saved to your Claude account</span>' : '<span class="pill warn">Saved on this phone only</span>'}</span>
+      ${IS_NATIVE ? (updateInfo ? `<a class="btn sm" href="${esc(updateInfo.apk)}" target="_blank" rel="noopener" style="text-decoration:none">Get 1.${updateInfo.build}</a>` : `<button class="btn line sm" data-act="checkupdate">Check for updates</button>`) : ""}</div>
+      ${updateMsg && !updateInfo ? `<p class="small muted" style="margin:6px 0 0">${esc(updateMsg)}</p>` : ""}</section>`;
   return `${topbar("Me", false)}
   <div class="grid two"><div class="col">
+    ${editProfile ? editor : summary}
     <section class="card"><div class="card-head"><h2>Your targets</h2><span class="pill">${GOALS[p.goal]}</span></div>
       <div class="checklist">
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Calories at rest (BMR)</span><b class="num">${fmt(t.bmr)}</b></div>
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>${t.source === "measured" ? `Daily burn, <b>measured</b> from your log <span class="small muted">(formula: ${fmt(t.formulaTdee)})</span>` : `× activity ${p.act} = daily burn (formula)`}</span><b class="num">${fmt(t.tdee)}</b></div>
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Goal adjustment${t.planned ? ` <span class="small muted">(${t.planned > 0 ? "+" : "−"}${fmt1(Math.abs(t.planned))} kg/week plan)</span>` : ""}</span><b class="num">${t.delta >= 0 ? "+" : ""}${t.delta}</b></div>
-        ${p.calAdjust ? `<div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Weekly check changes</span><b class="num">${p.calAdjust > 0 ? "+" : ""}${p.calAdjust}</b></div>` : ""}
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span><b>Daily target</b>${t.floored ? ` <span class="small muted">(safe minimum)</span>` : ""}</span><b class="num">${fmt(t.cal)} kcal</b></div>
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Protein · carbs · fat${t.refW < t.w - 0.5 ? ` <span class="small muted">(protein from ${fmt1(t.refW)} kg goal-body weight)</span>` : ""}</span><b class="num">${t.protein} · ${t.carbs} · ${t.fat} g</b></div>
-        <div class="check" style="grid-template-columns:minmax(0,1fr) auto"><span>Water · steps</span><b class="num">${fmt1(t.water / 1000)} L · ${fmt(t.steps)}</b></div>
+        ${row("Calories at rest (BMR)", fmt(t.bmr))}
+        ${t.source === "measured" ? row(`Daily burn, <b>measured</b> from your log <span class="small muted">(formula: ${fmt(t.formulaTdee)})</span>`, fmt(t.tdee))
+          : row(`Daily life (× ${p.act})${t.train ? ` + workouts <span class="small muted">(${c.days} days, ≈${fmt(t.train)} kcal a day)</span>` : ""}`, fmt(t.tdee))}
+        ${row(`Goal adjustment${t.planned ? ` <span class="small muted">(${t.planned > 0 ? "+" : "−"}${fmt1(Math.abs(t.planned))} kg/week plan)</span>` : ""}`, (t.delta >= 0 ? "+" : "") + t.delta)}
+        ${p.calAdjust ? row("Weekly check changes", (p.calAdjust > 0 ? "+" : "") + p.calAdjust) : ""}
+        ${row(`<b>Daily target</b>${t.floored ? ` <span class="small muted">(safe minimum)</span>` : ""}`, fmt(t.cal) + " kcal")}
+        ${row(`Protein · carbs · fat${t.refW < t.w - 0.5 ? ` <span class="small muted">(protein from ${fmt1(t.refW)} kg goal-body weight)</span>` : ""}`, `${t.protein} · ${t.carbs} · ${t.fat} g`)}
+        ${row("Water · steps today", `${fmt1(t.water / 1000)} L · ${fmt(t.steps)}`)}
       </div>
-      <p class="small muted" style="margin:10px 0 0">Based on ${fmt1(t.w)} kg, your latest weigh-in. Targets update when you log a new weight.</p>
-      <label class="row" style="margin-top:12px;align-items:flex-start;gap:10px"><input type="checkbox" id="use-measured" ${p.useMeasured !== false ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>Use my measured burn</b><br><span class="muted">Once 14+ days of logging give good confidence, targets follow your real burn instead of the formula.</span></span></label></section>
-    ${IS_NATIVE ? `<section class="card"><div class="card-head"><h2>App version</h2><span class="pill">1.${APP_BUILD}</span></div>
-      ${updateInfo ? `<p class="small" style="margin:0 0 10px">Version 1.${updateInfo.build} is ready.</p><a class="btn sm" href="${esc(updateInfo.apk)}" target="_blank" rel="noopener" style="text-decoration:none">Download update</a>`
-      : `<div class="row between"><span class="small muted">${esc(updateMsg)}</span><button class="btn line sm" data-act="checkupdate">Check for updates</button></div>`}</section>` : ""}
-    <section class="card"><h2>Saving</h2><p class="small" style="margin:6px 0 0">${storeMode === "cloud" ? '<span class="pill ok">Saved to your Claude account</span> Your log follows you to any device where you open Chop Count signed in.' : '<span class="pill warn">Saved on this phone only</span> Clearing the browser can erase it. Copy a backup code now and then.'}</p></section>
+      <label class="row" style="margin-top:12px;align-items:flex-start;gap:10px"><input type="checkbox" id="use-measured" ${p.useMeasured !== false ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>Use my measured burn</b><br><span class="muted">After 14+ days of logging, targets follow your real burn instead of the formula.</span></span></label></section>
+    ${app}
   </div><div class="col">
-    <section class="card"><h2 style="margin-bottom:12px">Your details</h2>${profileFields(p)}<p class="err" id="ob-err" hidden></p><button class="btn block" data-act="saveprofile" style="margin-top:14px">Save details</button></section>
     <section class="card"><h2>Backup</h2><p class="small muted" style="margin:6px 0 10px">Copy this code and keep it in your notes or WhatsApp. Paste it back on any phone to restore everything.</p>
       <div class="wrapflex"><button class="btn ghost sm" data-act="copybackup">Copy backup code</button></div>
       <textarea id="restore-in" placeholder="Paste a backup code to restore" aria-label="Backup code" style="margin-top:10px"></textarea>
@@ -1586,7 +1626,7 @@ function toast(msg, undo) {
 }
 
 /* ---------- Actions ---------- */
-function go(tab) { current = tab; trayOpen = false; savingFav = false; confirmReset = false; restoreMsg = ""; render(); window.scrollTo(0, 0); }
+function go(tab) { editProfile = false; current = tab; trayOpen = false; savingFav = false; confirmReset = false; restoreMsg = ""; render(); window.scrollTo(0, 0); }
 function addItemsToDay(entries) {
   const d = ensureDay(viewDate);
   entries.forEach(e => { const f = FOOD[e.fid]; if (!f) return; const m = calc(f, e.g, e.oil); d.items.push({ id: uid(), fid: e.fid, slot: logSlot, g: e.g, oil: isOily(f) ? (e.oil || "normal") : undefined, kcal: m.kcal, p: m.p, c: m.c, f: m.f, cost: Math.round(costOf(f, e.g)), name: f.name }); });
@@ -1668,7 +1708,7 @@ document.addEventListener("click", async ev => {
     const tc = tcfg(old), nc = tcfg(Object.assign({}, old, p));
     if (!tc.set || ["bg", "place", "days", "level"].some(k => tc[k] !== nc[k])) old.trainStart = todayStr();
     if (p.weightKg !== latestWeight(old)) { const ds = todayStr(), ex = state.weights.find(w => w.d === ds); if (ex) ex.kg = p.weightKg; else state.weights.push({ d: ds, kg: p.weightKg }); }
-    state.profile = Object.assign(old, p); save(); render(); toast("Details saved");
+    state.profile = Object.assign(old, p); editProfile = false; save(); render(); window.scrollTo(0, 0); toast("Details saved");
   } else if (a === "copybackup") {
     const code = "CC1." + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
     try { await navigator.clipboard.writeText(code); toast("Backup code copied"); }
@@ -1713,6 +1753,8 @@ document.addEventListener("click", async ev => {
   }
   else if (a === "hconnect") healthConnect();
   else if (a === "hsync") syncSteps(true);
+  else if (a === "editprofile") { editProfile = true; render(); }
+  else if (a === "canceledit") { editProfile = false; render(); }
   else if (a === "parq") { state.profile.parq = el.dataset.v; save(); render(); }
   else if (a === "rest") startRest(Number(el.dataset.s));
   else if (a === "restoff") stopRest();
@@ -1783,7 +1825,7 @@ function tickRest() {
 }
 function fill(p) {
   const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-  set("pf-name", p.name); set("pf-age", p.age || ""); set("pf-w", p.weightKg || ""); set("pf-act", p.act); set("pf-steps", p.baseSteps || ""); set("pf-budget", p.budget || "");
+  set("pf-name", p.name); set("pf-age", p.age || ""); set("pf-w", p.weightKg || ""); set("pf-act", p.act); set("pf-budget", p.budget || "");
   if (p.heightCm) { if (obUnit === "cm") set("pf-h", p.heightCm); else { set("pf-ft", Math.floor(p.heightCm / 30.48)); set("pf-in", Math.round((p.heightCm / 2.54) % 12)); } }
   ["pf-goal", "pf-sex"].forEach(n => { const v = n === "pf-goal" ? p.goal : p.sex; const r = document.querySelector(`input[name="${n}"][value="${v}"]`); if (r) r.checked = true; });
   set("pf-target", p.targetKg || ""); set("pf-level", p.level);

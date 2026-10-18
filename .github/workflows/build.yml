@@ -53,6 +53,9 @@ jobs:
           # Health Connect (automatic steps) needs Android 8.0+
           sed -i -E 's/minSdkVersion = [0-9]+/minSdkVersion = 26/' android/variables.gradle
           grep minSdkVersion android/variables.gradle
+          # Rest timer buzz
+          sed -i 's|<uses-permission android:name="android.permission.INTERNET" />|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.VIBRATE" />|' android/app/src/main/AndroidManifest.xml
+          grep -c VIBRATE android/app/src/main/AndroidManifest.xml
 
       - name: Generate app icon and splash
         continue-on-error: true
