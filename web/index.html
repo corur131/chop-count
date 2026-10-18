@@ -206,6 +206,7 @@ textarea { min-height: 90px; font-size: .8rem; font-family: ui-monospace, Menlo,
 .figbox .row { margin-top: 5px; font-size: .78rem; }
 .figbox a { color: var(--green); font-weight: 700; text-decoration: none; }
 
+.protline { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
 .kvs { display: grid; gap: 8px; }
 .kv { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; font-size: .9rem; }
 .kv b { font-weight: 600; }
@@ -478,14 +479,14 @@ const COMBOS = [
   ["m23", "Boiled plantain, eggs and stew", "m", "lose maintain", [["plantain_unripe_boiled", 300], ["tomato_stew", 45], ["egg_boiled", 100]]],
   ["m24", "Owo soup, starch and beef", "m", "all", [["starch_usi", 300], ["owo", 250], ["beef_boiled", 100]]],
   ["s1", "Groundnut and banana", "s", "all", [["groundnut_roasted", 30], ["banana", 120]]],
-  ["s2", "Two boiled eggs", "s", "lose maintain", [["egg_boiled", 100]]],
+  ["s2", "Boiled eggs", "s", "lose maintain", [["egg_boiled", 100]]],
   ["s3", "Yoghurt and banana", "s", "gain", [["yoghurt", 315], ["banana", 120]]],
   ["s4", "Roasted corn and coconut", "s", "all", [["corn_roasted", 100], ["coconut", 40]]],
   ["s5", "Boli and groundnut", "s", "all", [["boli", 150], ["groundnut_roasted", 30]]],
   ["s6", "Garden eggs and groundnut paste", "s", "lose maintain", [["garden_egg", 120], ["peanut_butter", 16]]],
   ["s7", "Pawpaw and orange", "s", "lose maintain", [["pawpaw", 150], ["orange", 130]]],
   ["s8", "Milo with milk", "s b", "gain", [["milo", 20], ["evap_milk", 80], ["sugar", 5]]],
-  ["s9", "Suya (3 sticks)", "s", "all", [["suya", 90]]],
+  ["s9", "Suya", "s", "all", [["suya", 90]]],
   ["s10", "Moi moi", "s", "all", [["moi_moi", 150]]],
   ["b10", "Cornflakes with milk", "b", "all", [["cornflakes", 40], ["fresh_milk", 250]]],
   ["b11", "Golden Morn with milk", "b", "all", [["golden_morn", 50], ["evap_milk", 40], ["sugar", 5]]],
@@ -495,7 +496,7 @@ const COMBOS = [
 const SLOT_CODE = { breakfast: "b", lunch: "m", dinner: "m", snack: "s" };
 let suggestSkip = 0;
 function comboAt(c, s) {
-  const items = c.items.map(([fid, g]) => ({ fid, g: Math.max(5, Math.round(g * s / 5) * 5), oil: "normal" }));
+  const items = c.items.map(([fid, g]) => ({ fid, g: snapGrams(FOOD[fid], g * s), oil: "normal" }));
   const tot = items.reduce((a, i) => { const f = FOOD[i.fid], m = calc(f, i.g, "normal"); return { kcal: a.kcal + m.kcal, p: a.p + m.p, cost: a.cost + costOf(f, i.g) }; }, { kcal: 0, p: 0, cost: 0 });
   return Object.assign({ items }, tot);
 }
@@ -540,7 +541,7 @@ function suggestCard() {
   else {
     const n = list.length, start = suggestSkip % n, pick = [];
     for (let i = 0; i < Math.min(3, n); i++) pick.push(list[(start + i) % n]);
-    body = `<div class="grid">${pick.map(r => `<div class="sug"><div class="row between" style="align-items:start"><div style="min-width:0"><b>${esc(r.c.name)}</b><p class="small muted" style="margin:2px 0 0">${r.items.map(i => `${esc(FOOD[i.fid].name.split(" (")[0].split(",")[0])} ${i.g} g`).join(" · ")}</p></div>
+    body = `<div class="grid">${pick.map(r => `<div class="sug"><div class="row between" style="align-items:start"><div style="min-width:0"><b>${esc(r.c.name)}</b><p class="small muted" style="margin:2px 0 0">${r.items.map(i => `${esc(shortName(FOOD[i.fid]))}: <b>${esc(amountText(FOOD[i.fid], i.g))}</b>`).join(" · ")}</p></div>
       <button class="btn sm" data-act="usecombo" data-id="${r.c.id}" data-s="${r.s}">Add</button></div>
       <div class="row small num" style="margin-top:6px;gap:12px"><span><b>${fmt(r.kcal)}</b> kcal</span><span style="color:var(--prot)"><b>${fmt(r.p)}</b> g protein</span><span><b>${naira(r.cost)}</b></span></div></div>`).join("")}</div>
       ${n > 3 ? `<button class="btn line sm" data-act="moresug" style="margin-top:10px">Show other ideas</button>` : ""}`;
@@ -597,6 +598,72 @@ function unitsFor(f) {
   if (f.cat === "Rice & grains" && f.pg >= 250) u.unshift({ k: "spoon", label: "1 serving spoon", g: 55 });
   return u;
 }
+/* ---------- Amounts people can count: "2 eggs", "4 slices", "1 medium wrap" ----------
+   [unit, plural, grams per unit, step]. Step 1 = whole pieces only; 0.5 allows halves (half a plate, half a cup). */
+const COUNT = {
+  egg_boiled: ["egg", "eggs", 50, 1], egg_fried: ["egg", "eggs", 50, 1],
+  bread_white: ["slice", "slices", 35, 1], bread_wheat: ["slice", "slices", 35, 1],
+  akara: ["ball", "balls", 30, 1], puff_puff: ["ball", "balls", 30, 1], suya: ["stick", "sticks", 30, 1],
+  banana: ["banana", "bananas", 120, 1], orange: ["orange", "oranges", 130, 1], garden_egg: ["garden egg", "garden eggs", 60, 1],
+  beef_boiled: ["piece", "pieces", 50, 1], goat: ["piece", "pieces", 50, 1], assorted: ["piece", "pieces", 50, 1],
+  chicken: ["piece", "pieces", 100, 1], fried_chicken: ["piece", "pieces", 110, 1], chicken_breast: ["breast", "breasts", 150, 1],
+  catfish: ["cut", "cuts", 120, 1], mackerel: ["cut", "cuts", 70, 1], stockfish: ["piece", "pieces", 20, 1],
+  moi_moi: ["leaf wrap", "leaf wraps", 150, 1], boli: ["boli", "boli", 150, 0.5], yam_boiled: ["slice", "slices", 100, 1],
+  plantain_unripe_boiled: ["finger", "fingers", 170, 0.5], dodo: ["plantain, fried", "plantains, fried", 130, 0.5],
+  corn_roasted: ["cob", "cobs", 100, 1], coconut: ["piece", "pieces", 40, 1], pawpaw: ["slice", "slices", 150, 1],
+  sweet_potato: ["medium potato", "medium potatoes", 150, 0.5], peanut_butter: ["tbsp", "tbsp", 16, 1], sugar: ["tsp", "tsp", 5, 1],
+  milo: ["sachet", "sachets", 20, 1], groundnut_roasted: ["handful", "handfuls", 30, 1], evap_milk: ["tbsp", "tbsp", 15, 1],
+  fresh_milk: ["cup", "cups", 250, 0.5], tea_milk: ["cup", "cups", 250, 0.5], yoghurt: ["bottle", "bottles", 315, 0.5],
+  garri_dry: ["cup", "cups", 120, 0.5], cornflakes: ["bowl", "bowls", 40, 0.5], golden_morn: ["bowl", "bowls", 50, 0.5],
+  oats: ["bowl", "bowls", 250, 0.5], pap: ["bowl", "bowls", 300, 0.5], custard: ["bowl", "bowls", 300, 0.5],
+  indomie: ["pack", "packs", 160, 1], sandwich_egg: ["sandwich", "sandwiches", 150, 1],
+  gbegiri: ["ladle", "ladles", 120, 0.5], ewedu: ["ladle", "ladles", 120, 0.5],
+  tomato_stew: ["serving spoon", "serving spoons", 45, 1], ayamase: ["serving spoon", "serving spoons", 45, 1]
+};
+const SWALLOW_SIZES = [[200, "1 small wrap"], [300, "1 medium wrap"], [450, "1 large wrap"], [600, "2 medium wraps"], [900, "3 medium wraps"]];
+function countRule(f) {
+  if (!f || f.custom) return null;
+  if (COUNT[f.id]) return COUNT[f.id];
+  if (f.cat === "Soups & stews") return f.pg <= 60 ? ["serving spoon", "serving spoons", 45, 1] : ["ladle", "ladles", 120, 1];
+  if (f.cat === "Rice & grains" && f.pg >= 250) return ["serving spoon", "serving spoons", 55, 1];
+  if (["plate", "bowl"].some(w => (f.portion || "").includes(w))) { const w = f.portion.includes("bowl") ? "bowl" : "plate"; return [w, w + "s", f.pg, 0.5]; }
+  return null;
+}
+function fracText(n) { const w = Math.floor(n), h = n - w >= 0.5 - 1e-9; return (w || !h ? String(w) : "") + (h ? "½" : ""); }
+/* Snap grams to whole (or half) pieces so a suggestion never says 2½ eggs. */
+function snapGrams(f, g) {
+  if (f.cat === "Swallow" && !f.custom) return SWALLOW_SIZES.reduce((a, s) => Math.abs(s[0] - g) < Math.abs(a - g) ? s[0] : a, 300);
+  const r = countRule(f); if (!r) return Math.max(5, Math.round(g / 5) * 5);
+  let n = Math.max(r[3], Math.round(g / r[2] / r[3]) * r[3]);
+  if (r[0] === "egg") n = Math.min(n, 3);
+  return Math.round(n * r[2]);
+}
+function amountText(f, g) {
+  if (!f) return fmt(g) + " g";
+  if (f.cat === "Swallow" && !f.custom) { const s = SWALLOW_SIZES.find(x => Math.abs(x[0] - g) <= x[0] * 0.08); return s ? s[1] : fmt(g) + " g"; }
+  const r = countRule(f);
+  if (r) { const n = g / r[2], q = Math.round(n / r[3]) * r[3]; if (q > 0 && Math.abs(n - q) <= 0.12 * Math.max(1, q)) return `${fracText(q)} ${q > 1 ? r[1] : r[0]}`; }
+  return fmt(g) + " g";
+}
+/* Protein left today, in everyday food. Rotates the main protein by date; eggs capped at 3 a day including what's logged. */
+const PROT_MAINS = [["chicken", 100, "a piece of chicken"], ["mackerel", 70, "a cut of Titus fish"], ["beans_porridge", 250, "a plate of beans"], ["beef_boiled", 100, "2 pieces of beef"], ["catfish", 120, "a cut of catfish"], ["moi_moi", 150, "a wrap of moi moi"]];
+function proteinHelp(ds, t) {
+  const tot = dayTotals(ds), d = getDay(ds), left = t.protein - tot.p;
+  if (left <= 5) return `<b>Protein done for today.</b>`;
+  const h = ds === todayStr() ? new Date().getHours() : 8, mealsLeft = h < 11 ? 3 : h < 16 ? 2 : 1;
+  let need = Math.min(50, left / mealsLeft);
+  const eggsToday = (d && d.items || []).filter(i => /^egg_/.test(i.fid)).reduce((a, i) => a + i.g / 50, 0);
+  let eggs = Math.max(0, Math.min(2, 3 - Math.round(eggsToday))), k = parseDay(ds).getDate() % PROT_MAINS.length;
+  const parts = [], eggP = FOOD.egg_boiled.p / 2;
+  for (let guard = 0; need > 5 && guard < 3; guard++) {
+    if (need <= eggP * 2.5 && eggs > 0) { const n = Math.min(eggs, Math.ceil(need / eggP)); parts.push(`${n} boiled egg${n > 1 ? "s" : ""}`); need -= n * eggP; eggs -= n; continue; }
+    const [id, g, label] = PROT_MAINS[k++ % PROT_MAINS.length]; parts.push(label); need -= FOOD[id].p * g / 100;
+  }
+  const per = Math.round(left / mealsLeft);
+  if (mealsLeft === 1 && left > 55) return `<b>${Math.round(left)} g protein to go</b> — too much for one meal. Aim for about 40–50 g now (${parts.join(" + ")}) and spread protein over breakfast, lunch and dinner tomorrow.`;
+  return `<b>${Math.round(left)} g protein ${tot.p > 1 ? "to go" : "today"}</b>${mealsLeft > 1 ? ` — about ${per} g in each of your next ${mealsLeft} meals.` : "."} One way to get ${mealsLeft > 1 ? "a meal's worth" : "it"}: ${parts.join(" + ")}.`;
+}
+function shortName(f) { return f ? f.name.split(" (")[0].split(",")[0] : "Food"; }
 function calc(f, g, oil) {
   const m = g / 100, om = isOily(f) ? OIL[oil || "normal"] : 1;
   return { kcal: f.kcal * m + f.f * m * (om - 1) * 9, p: f.p * m, c: f.c * m, f: f.f * m * om };
@@ -1210,7 +1277,7 @@ function todayHTML() {
     const list = items.filter(i => i.slot === k);
     const kc = list.reduce((a, i) => a + i.kcal, 0);
     return `<div class="meal"><div class="meal-head"><h3>${label}</h3><span class="small muted num">${list.length ? fmt(kc) + " kcal" : ""}</span></div>
-      ${list.length ? list.map(i => `<div class="item"><span class="nm">${esc(FOOD[i.fid] ? FOOD[i.fid].name : i.name)} <span class="muted small">· ${fmt(i.g)} g${i.oil && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(i.kcal)}</span><button class="x" data-act="rmitem" data-id="${i.id}" aria-label="Remove">×</button></div>`).join("")
+      ${list.length ? list.map(i => `<div class="item"><span class="nm">${esc(FOOD[i.fid] ? FOOD[i.fid].name : i.name)} <span class="muted small">· ${esc(amountText(FOOD[i.fid], i.g))}${i.oil && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(i.kcal)}</span><button class="x" data-act="rmitem" data-id="${i.id}" aria-label="Remove">×</button></div>`).join("")
       : `<button class="btn line sm" data-act="logslot" data-slot="${k}" style="margin-top:6px">+ Add ${label.toLowerCase()}</button>`}
     </div>`;
   }).join("");
@@ -1230,7 +1297,8 @@ function todayHTML() {
   ${updateBanner()}
   <div class="grid two"><div class="col">
     <section class="card"><div class="hero"><div class="ring">${ringSVG(tot.kcal, t.cal)}<div class="center"><span class="big num">${fmt(tot.kcal)}</span><span class="small muted">of ${fmt(t.cal)} kcal</span></div></div>
-      <div class="macros"><p class="small"><b>${heroLine}</b></p>${macroBar("Protein", tot.p, t.protein, "var(--prot)")}${macroBar("Carbs", tot.c, t.carbs, "var(--carb)")}${macroBar("Fat", tot.f, t.fat, "var(--fat)")}</div></div></section>
+      <div class="macros"><p class="small"><b>${heroLine}</b></p>${macroBar("Protein", tot.p, t.protein, "var(--prot)")}${macroBar("Carbs", tot.c, t.carbs, "var(--carb)")}${macroBar("Fat", tot.f, t.fat, "var(--fat)")}</div></div>
+      <p class="small protline">${proteinHelp(viewDate, t)}</p></section>
     <section class="card"><div class="card-head"><h2>Daily checklist</h2><span class="pill ${done === 5 ? "ok" : ""}">${done}/5 · ${sk} day streak</span></div>
       <div class="checklist">${checks.map(c => `<div class="check"><span class="tick ${c[1] ? "on" : ""}" aria-hidden="true">✓</span><span><b>${c[0]}</b></span><span class="small muted num">${c[2]}</span></div>`).join("")}</div></section>
     ${viewDate === todayStr() ? suggestCard() : ""}
@@ -1287,7 +1355,7 @@ function trayHTML() {
   return `<div class="tray"><div class="tray-in">
     <div class="row between"><button class="row" data-act="tray" style="background:none;border:0;color:inherit;padding:0;text-align:left" aria-expanded="${trayOpen}"><span><b>Plate · ${plate.length} item${plate.length > 1 ? "s" : ""}</b><br><span class="small muted num">${fmt(t.kcal)} kcal · P ${fmt(t.p)} · C ${fmt(t.c)} · F ${fmt(t.f)} g</span></span><span aria-hidden="true" style="margin-left:6px">${trayOpen ? "▾" : "▴"}</span></button>
     <button class="btn" data-act="commit">Add to ${slotLabel.toLowerCase()}</button></div>
-    ${trayOpen ? `<div class="tray-list">${plate.map((i, ix) => { const f = FOOD[i.fid] || { name: "Deleted food", f: 0, kcal: 0, p: 0, c: 0, cat: "" }; return `<div class="item"><span class="nm">${esc(f.name)} <span class="muted small">· ${fmt(i.g)} g${isOily(f) && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(calc(f, i.g, i.oil).kcal)}</span><button class="x" data-act="rmplate" data-ix="${ix}" aria-label="Remove">×</button></div>`; }).join("")}</div>
+    ${trayOpen ? `<div class="tray-list">${plate.map((i, ix) => { const f = FOOD[i.fid] || { name: "Deleted food", f: 0, kcal: 0, p: 0, c: 0, cat: "" }; return `<div class="item"><span class="nm">${esc(f.name)} <span class="muted small">· ${esc(amountText(f, i.g))}${isOily(f) && i.oil !== "normal" ? " · " + i.oil + " oil" : ""}</span></span><span class="num small">${fmt(calc(f, i.g, i.oil).kcal)}</span><button class="x" data-act="rmplate" data-ix="${ix}" aria-label="Remove">×</button></div>`; }).join("")}</div>
       ${savingFav ? `<div class="row"><input type="text" id="fav-name" maxlength="28" placeholder="Name, e.g. Eba + egusi" aria-label="Plate name"><button class="btn ghost sm" data-act="savefav">Save</button></div>`
       : `<div class="wrapflex"><button class="btn ghost sm" data-act="favmode">Save as usual plate</button><button class="btn ghost sm" data-act="clearplate">Clear plate</button></div>`}` : ""}
   </div></div>`;
@@ -1312,6 +1380,7 @@ function drawSheet() {
       <label class="field" style="width:120px"><span>Or grams</span><input type="number" id="sheet-g" inputmode="numeric" min="1" max="3000" value="${g}"></label></div>
     ${isOily(f) ? `<div class="field"><span>Oil in this pot</span><div class="seg" role="radiogroup">${[["light", "Light"], ["normal", "Normal"], ["heavy", "Heavy"]].map(([k, l]) => `<label><input type="radio" name="oil" value="${k}" ${s.oil === k ? "checked" : ""}><span>${l}</span></label>`).join("")}</div></div>` : ""}
     <div class="mgrid" id="sheet-m">${mgridInner(m)}</div>
+    ${/^egg_/.test(f.id) ? `<p class="small muted" style="margin:0">Eggs: large studies find about 1 egg a day isn't linked to heart disease, and many healthy people eat 2–3. If you have high cholesterol or diabetes, ask your doctor how many suit you.</p>` : ""}
     <div class="row between"><span class="small">Cost: <b class="num" id="sheet-cost">${naira(costOf(f, g))}</b></span>
       <label class="row small" style="gap:8px"><span class="muted">Price for ${esc(f.cat === "Swallow" ? "1 medium wrap" : f.portion)} ₦</span><input type="number" id="sheet-price" inputmode="numeric" min="0" max="100000" step="10" value="${portionPrice(f)}" style="width:92px;padding:8px" aria-label="Your price"></label></div>
     <button class="btn block" data-act="toplate">Add to plate</button>
