@@ -327,6 +327,53 @@ const FIGS = {
   legcurl: { props: ["seat"], A: { hip: [90, 80], t: -96, hd: -90, foot: 0, foot2: 0, arms: [{ a: [80, 40] }, { a: [80, 40] }], legs: [{ a: [0, 30] }, { a: [0, 30] }] },
     B: { hip: [90, 80], t: -96, hd: -90, foot: 0, foot2: 0, arms: [{ a: [80, 40] }, { a: [80, 40] }], legs: [{ a: [0, 125] }, { a: [0, 125] }] } }
 };
+/* v1.8 additions and redraws (later keys replace earlier ones). cable: [anchor x, anchor y, "hand" | "foot"]; grip: "bar" | "rope"; bagAt: "hand" (default) | "hip" | "neck" | "foot". */
+Object.assign(FIGS, {
+  bridge: { props: [], A: { hip: [92, 104], t: 180, hd: 180, foot: 0, arms: [{ a: [6, 0] }, { a: [6, 0] }], legs: [{ to: [126, 107], bend: -1 }, { to: [126, 107], bend: -1 }] },
+    B: { hip: [88, 82], t: 148.6, hd: 160, foot: 0, arms: [{ a: [8, 2] }, { a: [8, 2] }], legs: [{ to: [126, 107], bend: -1 }, { to: [126, 107], bend: -1 }] } },
+  bridge1: { props: [], A: { hip: [92, 104], t: 180, hd: 180, foot: 0, foot2: -40, arms: [{ a: [6, 0] }, { a: [6, 0] }], legs: [{ to: [126, 107], bend: -1 }, { a: [-40, -40] }] },
+    B: { hip: [88, 82], t: 148.6, hd: 160, foot: 0, foot2: -31, arms: [{ a: [8, 2] }, { a: [8, 2] }], legs: [{ to: [126, 107], bend: -1 }, { a: [-31, -31] }] } },
+  hipthrust1: { props: ["bench"], A: { hip: [92, 100], t: 209, hd: 200, foot: 0, foot2: -30, arms: [{ a: [196, 160] }, { a: [190, 160] }], legs: [{ to: [128, 107], bend: -1 }, { a: [-30, -30] }] },
+    B: { hip: [90, 77], t: 177, hd: 185, foot: 0, foot2: -3, arms: [{ a: [186, 150] }, { a: [180, 150] }], legs: [{ to: [128, 107], bend: -1 }, { a: [-3, -3] }] } },
+  rdl1: { props: ["bag"], A: { hip: [95, 56], t: -90, hd: -90, foot2: 0, arms: [{ a: [92, 90] }, { a: [92, 90] }], legs: [{ to: [97, 107], bend: -1 }, { a: [92, 92] }] },
+    B: { hip: [86, 60], t: -12, hd: -6, foot2: 80, arms: [{ a: [90, 90] }, { a: [90, 90] }], legs: [{ to: [97, 107], bend: -1 }, { a: [168, 168] }] } },
+  goblet: { props: ["bag"], A: { hip: [97, 54], t: -90, hd: -90, arms: [{ a: [80, -60] }, { a: [80, -60] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] },
+    B: { hip: [74, 84], t: -62, hd: -58, arms: [{ a: [100, -30] }, { a: [100, -30] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] } },
+  backsquat: { props: [], grip: "bar", A: { hip: [97, 54], t: -90, hd: -90, arms: [{ a: [120, -60] }, { a: [120, -60] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] },
+    B: { hip: [72, 82], t: -48, hd: -40, arms: [{ a: [160, -20] }, { a: [160, -20] }], legs: [{ to: [98, 107], bend: -1 }, { to: [98, 107], bend: -1 }] } },
+  legpress: { props: ["lpseat", "bag"], bagAt: "foot", A: { hip: [75, 92], t: 215, hd: 215, foot: -125, arms: [{ a: [60, 60] }, { a: [60, 60] }], legs: [{ to: [99, 75], bend: -1 }, { to: [99, 75], bend: -1 }] },
+    B: { hip: [75, 92], t: 215, hd: 215, foot: -125, arms: [{ a: [60, 60] }, { a: [60, 60] }], legs: [{ to: [117, 63], bend: -1 }, { to: [117, 63], bend: -1 }] } },
+  pushwall: { props: ["wall"], A: { hip: [105.5, 54.3], t: -84, hd: -84, foot: 0, arms: [{ to: [150, 30], bend: 1 }, { to: [150, 30], bend: 1 }], legs: [{ to: [100, 107], bend: -1 }, { to: [100, 107], bend: -1 }] },
+    B: { hip: [119.9, 57.9], t: -68, hd: -68, foot: 0, arms: [{ to: [150, 30], bend: 1 }, { to: [150, 30], bend: 1 }], legs: [{ to: [100, 107], bend: -1 }, { to: [100, 107], bend: -1 }] } },
+  pushinc: { props: ["table"], A: { hip: [102.3, 65], t: -52.5, hd: -50, foot: 60, arms: [{ to: [140, 73], bend: 1 }, { to: [140, 73], bend: 1 }], legs: [{ to: [70, 107], bend: 1 }, { to: [70, 107], bend: 1 }] },
+    B: { hip: [109.4, 71.5], t: -42, hd: -40, foot: 60, arms: [{ to: [140, 73], bend: 1 }, { to: [140, 73], bend: 1 }], legs: [{ to: [70, 107], bend: 1 }, { to: [70, 107], bend: 1 }] } },
+  pushknee: { props: [], A: { hip: [91.7, 89.9], t: -36.5, hd: -30, foot: 180, arms: [{ to: [128, 107], bend: 1 }, { to: [128, 107], bend: 1 }], legs: [{ a: [143.5, 178] }, { a: [143.5, 178] }] },
+    B: { hip: [96, 98.5], t: -16, hd: -12, foot: 180, arms: [{ to: [128, 107], bend: 1 }, { to: [128, 107], bend: 1 }], legs: [{ a: [164, 178] }, { a: [164, 178] }] } },
+  pushdec: { props: ["chair"], A: { hip: [110.7, 71.2], t: -6.3, hd: -4, foot: 100, arms: [{ to: [140, 107], bend: 1 }, { to: [140, 107], bend: 1 }], legs: [{ to: [58, 77], bend: 1 }, { to: [58, 77], bend: 1 }] },
+    B: { hip: [110.5, 84.4], t: 8, hd: 10, foot: 100, arms: [{ to: [140, 107], bend: 1 }, { to: [140, 107], bend: 1 }], legs: [{ to: [58, 77], bend: 1 }, { to: [58, 77], bend: 1 }] } },
+  pullup: { props: ["pullbar"], A: { hip: [100, 73], t: -90, hd: -90, foot: 220, arms: [{ to: [100, -4], bend: 1 }, { to: [100, -4], bend: 1 }], legs: [{ a: [115, 205] }, { a: [110, 200] }] },
+    B: { hip: [100, 46], t: -90, hd: -90, foot: 220, arms: [{ to: [100, -4], bend: 1 }, { to: [100, -4], bend: 1 }], legs: [{ a: [115, 205] }, { a: [110, 200] }] } },
+  negative: { props: ["pullbar"], dur: 3.6, A: { hip: [100, 46], t: -90, hd: -90, foot: 220, arms: [{ to: [100, -4], bend: 1 }, { to: [100, -4], bend: 1 }], legs: [{ a: [115, 205] }, { a: [110, 200] }] },
+    B: { hip: [100, 73], t: -90, hd: -90, foot: 220, arms: [{ to: [100, -4], bend: 1 }, { to: [100, -4], bend: 1 }], legs: [{ a: [115, 205] }, { a: [110, 200] }] } },
+  row1: { props: ["benchR", "bag"], A: { hip: [90, 58], t: -22, hd: -14, foot: 0, foot2: 180, arms: [{ a: [95, 80] }, { to: [128, 85], bend: -1 }], legs: [{ to: [80, 107], bend: -1 }, { a: [90, 180] }] },
+    B: { hip: [90, 58], t: -22, hd: -14, foot: 0, foot2: 180, arms: [{ a: [172, 90] }, { to: [128, 85], bend: -1 }], legs: [{ to: [80, 107], bend: -1 }, { a: [90, 180] }] } },
+  cablerow: { props: ["lowseat", "footplate", "stack"], cable: [158, 76, "hand"], grip: "bar", A: { hip: [80, 95], t: -78, hd: -74, foot: -80, arms: [{ to: [122, 72], bend: 1 }, { to: [122, 72], bend: 1 }], legs: [{ to: [128, 94], bend: -1 }, { to: [128, 94], bend: -1 }] },
+    B: { hip: [80, 95], t: -96, hd: -92, foot: -80, arms: [{ to: [94, 76], bend: 1 }, { to: [94, 76], bend: 1 }], legs: [{ to: [128, 94], bend: -1 }, { to: [128, 94], bend: -1 }] } },
+  pulldown: { props: ["seat", "stack"], cable: [100, -12, "hand"], grip: "bar", A: { hip: [90, 80], t: -95, hd: -90, foot: 0, foot2: 0, arms: [{ to: [100, -2], bend: 1 }, { to: [100, -2], bend: 1 }], legs: [{ a: [0, 90] }, { a: [0, 90] }] },
+    B: { hip: [90, 80], t: -100, hd: -96, foot: 0, foot2: 0, arms: [{ to: [98, 36], bend: -1 }, { to: [98, 36], bend: -1 }], legs: [{ a: [0, 90] }, { a: [0, 90] }] } },
+  pushdown: { props: ["stack"], cable: [150, -12, "hand"], grip: "rope", A: { hip: [92, 56], t: -84, hd: -80, arms: [{ a: [92, -40] }, { a: [92, -40] }], legs: [{ to: [100, 107], bend: -1 }, { to: [84, 107], bend: 1 }] },
+    B: { hip: [92, 56], t: -84, hd: -80, arms: [{ a: [92, 82] }, { a: [92, 82] }], legs: [{ to: [100, 107], bend: -1 }, { to: [84, 107], bend: 1 }] } },
+  cablekick: { props: ["stack"], cable: [152, 104, "foot"], A: { hip: [100, 56], t: -62, hd: -56, foot: 100, foot2: 0, arms: [{ to: [146, 30], bend: 1 }, { to: [146, 30], bend: 1 }], legs: [{ a: [95, 95] }, { to: [106, 107], bend: -1 }] },
+    B: { hip: [100, 56], t: -62, hd: -56, foot: 100, foot2: 0, arms: [{ to: [146, 30], bend: 1 }, { to: [146, 30], bend: 1 }], legs: [{ a: [150, 150] }, { to: [106, 107], bend: -1 }] } },
+  floorpress: { props: ["bag"], A: { hip: [100, 104], t: 180, hd: 180, foot: 0, arms: [{ to: [62, 64], bend: -1 }, { to: [62, 64], bend: -1 }], legs: [{ to: [128, 107], bend: -1 }, { to: [128, 107], bend: -1 }] },
+    B: { hip: [100, 104], t: 180, hd: 180, foot: 0, arms: [{ to: [66, 86], bend: -1 }, { to: [66, 86], bend: -1 }], legs: [{ to: [128, 107], bend: -1 }, { to: [128, 107], bend: -1 }] } },
+  hamstring: { props: ["chairR"], dur: 4, A: { hip: [90, 56], t: -90, hd: -90, foot: -60, arms: [{ a: [95, 90] }, { a: [95, 90] }], legs: [{ to: [138, 76], bend: -1 }, { to: [88, 107], bend: -1 }] },
+    B: { hip: [90, 56], t: -40, hd: -32, foot: -60, arms: [{ a: [10, 16] }, { a: [10, 16] }], legs: [{ to: [138, 76], bend: -1 }, { to: [88, 107], bend: -1 }] } },
+  child: { props: [], dur: 4, A: { hip: [80, 86], t: -80, hd: -80, foot: 180, arms: [{ a: [80, 85] }, { a: [80, 85] }], legs: [{ a: [45, 180] }, { a: [45, 180] }] },
+    B: { hip: [80, 86], t: 20, hd: 25, foot: 180, arms: [{ a: [4, 2] }, { a: [4, 2] }], legs: [{ a: [45, 180] }, { a: [45, 180] }] } },
+  abduction: { props: [], A: { hip: [92, 101], t: 180, hd: 200, foot: -2, foot2: -2, arms: [{ a: [2, 4] }, { a: [175, -60] }], legs: [{ a: [-2, -2] }, { a: [1, 1] }] },
+    B: { hip: [92, 101], t: 180, hd: 200, foot: -35, foot2: -2, arms: [{ a: [2, 4] }, { a: [175, -60] }], legs: [{ a: [-33, -33] }, { a: [1, 1] }] } }
+});
 const FIG_FOR = {
   "Push-ups": "pushup", "Backpack rows": "rows", "Chair dips": "dips", "Pike push-ups": "pike", "Plank": "plank", "Squats": "squat",
   "Reverse lunges": "lunge", "Glute bridges": "bridge", "Calf raises on a step": "calf", "Side plank": "sideplank", "Step-ups on a stair": "stepup",
@@ -373,6 +420,14 @@ function figPropsSVG(fig) {
     chairL: '<path d="M46 82h28M50 82v28M70 82v28M46 82V56"/>',
     seat: '<path d="M70 83h40M76 83v27M104 83v27"/>',
     door: '<path d="M122 4v106M128 4v106"/>',
+    wall: '<path d="M151 -10v120"/>',
+    table: '<path d="M128 74h44M132 74v36M168 74v36"/>',
+    pullbar: '<path d="M56 -6h88M60 -6v-6M140 -6v-6"/>',
+    benchR: '<path d="M62 87h76M66 87v23M134 87v23"/>',
+    lpseat: '<path d="M28 70L80 99M80 99v11M40 77v33M100 84L156 46"/>',
+    lowseat: '<path d="M58 98h40M64 98v12M92 98v12"/>',
+    footplate: '<path d="M132 84v24"/>',
+    stack: '<path d="M156 -12v122M164 -12v122M156 -12h8"/>',
     bag: ""
   }[p] || "")).join("");
 }
@@ -381,8 +436,12 @@ function figFrame(fig, k) {
   const seg = pts => "M" + pts.map(p => f(p[0]) + " " + f(p[1])).join("L");
   const near = [seg([P.neck, P.hip]), seg([P.neck, P.arms[0][0], P.arms[0][1]]), seg([P.hip, P.legs[0][0], P.legs[0][1], P.toes[0]])].join("");
   const far = [seg([P.neck, P.arms[1][0], P.arms[1][1]]), seg([P.hip, P.legs[1][0], P.legs[1][1], P.toes[1]])].join("");
-  const bag = (fig.props || []).includes("bag") ? (fig.bagAt === "hip" ? [P.hip[0], P.hip[1] - 12] : P.arms[0][1]) : null;
-  return { near, far, head: P.head, bag };
+  const at = { hip: [P.hip[0], P.hip[1] - 12], neck: [P.neck[0] - 2, P.neck[1] - 6], foot: [P.toes[0][0] + 3, P.toes[0][1] - 10] }[fig.bagAt] || P.arms[0][1];
+  const bag = (fig.props || []).includes("bag") ? at : null;
+  let cable = "", grip = "";
+  if (fig.cable) { const e = fig.cable[2] === "foot" ? P.legs[0][1] : P.arms[0][1]; cable = seg([[fig.cable[0], fig.cable[1]], e]); }
+  if (fig.grip) { const h = P.arms[0][1]; grip = fig.grip === "bar" ? seg([[h[0] - 12, h[1]], [h[0] + 12, h[1]]]) : seg([[h[0] - 4, h[1] + 5], h, [h[0] + 4, h[1] + 5]]); }
+  return { near, far, head: P.head, bag, cable, grip };
 }
 function figSVG(key) {
   const fig = FIGS[key]; if (!fig) return "";
@@ -390,9 +449,11 @@ function figSVG(key) {
   return `<svg class="fig" viewBox="0 -14 200 130" data-fig="${key}" role="img" aria-label="Animated demonstration">
     <line x1="8" y1="110" x2="192" y2="110" stroke="var(--line)" stroke-width="2"/>
     <g fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${figPropsSVG(fig)}</g>
+    ${fig.cable ? `<path class="f-cable" d="${fr.cable}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 2"/>` : ""}
     <path class="f-far" d="${fr.far}" fill="none" stroke="var(--muted)" stroke-opacity=".55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     ${fr.bag ? `<rect class="f-bag" x="${(fr.bag[0] - 7).toFixed(1)}" y="${(fr.bag[1] - 2).toFixed(1)}" width="14" height="16" rx="3" fill="var(--amber)"/>` : ""}
     <path class="f-near" d="${fr.near}" fill="none" stroke="var(--green)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${fig.grip ? `<path class="f-grip" d="${fr.grip}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>` : ""}
     <circle class="f-head" cx="${fr.head[0].toFixed(1)}" cy="${fr.head[1].toFixed(1)}" r="7.5" fill="var(--green)"/>
   </svg>`;
 }
@@ -879,16 +940,16 @@ function tcfg(p) {
 /* Exercise library: [name, figure, kind, cue, harder version]. kind: bw body weight, bp backpack-loadable, db dumbbell, bb barbell, mc machine/cable, band, time (seconds). */
 const EXD = {
   sq: ["Squats", "squat", "bp", "Sit down between your heels, knees follow your toes, chest up.", "Hold a loaded backpack at your chest, or move to Bulgarian split squats."],
-  gsq: ["Goblet squat", "squat", "db", "Hold one dumbbell at your chest. Sit between your heels, elbows inside the knees at the bottom."],
-  bsq: ["Back squat", "squat", "bb", "Bar on your upper back, brace your belly, sit until thighs are at least level with the knees, drive up."],
-  lp: ["Leg press", "squat", "mc", "Feet high and wide on the plate puts more work on the glutes. Lower until your hips are about to lift off the pad."],
+  gsq: ["Goblet squat", "goblet", "db", "Hold one dumbbell at your chest. Sit between your heels, elbows inside the knees at the bottom."],
+  bsq: ["Back squat", "backsquat", "bb", "Bar on your upper back, brace your belly, sit until thighs are at least level with the knees, drive up."],
+  lp: ["Leg press", "legpress", "mc", "Feet high and wide on the plate puts more work on the glutes. Lower until your hips are about to lift off the pad."],
   hts: ["Sofa hip thrust", "hipthrust", "bp", "Upper back on the edge of a sofa or bed, backpack on your hips. Drive through your heels, chin tucked, squeeze 1 second at the top.", "Do it on one leg."],
   htd: ["Dumbbell hip thrust", "hipthrust", "db", "Upper back on a bench or sofa, dumbbell across your hips. Shins upright at the top, pause 1 second."],
   htb: ["Barbell hip thrust", "hipthrust", "bb", "Pad the bar, upper back on the bench edge. Ribs down, shins upright at the top, pause 1 second."],
   gb: ["Glute bridges", "bridge", "bp", "Push through your heels, squeeze 1 second at the top, ribs down.", "Single-leg glute bridge."],
-  gbs: ["Single-leg glute bridge", "bridge", "bw", "One foot up, push through the other heel and keep your hips level.", "Put your shoulders on the sofa for a single-leg hip thrust."],
+  gbs: ["Single-leg glute bridge", "bridge1", "bw", "One foot up, push through the other heel and keep your hips level.", "Put your shoulders on the sofa for a single-leg hip thrust."],
   rdlp: ["Backpack Romanian deadlift", "rdl", "bp", "Backpack in front of your thighs. Soft knees, push your hips back until the hamstrings stretch, back flat, then squeeze your glutes to stand.", "Single-leg Romanian deadlift."],
-  rdls: ["Single-leg Romanian deadlift", "rdl", "bp", "Hold a wall with one hand. Push your hips back while the free leg rises behind you, back flat.", "Hold the backpack in the free hand."],
+  rdls: ["Single-leg Romanian deadlift", "rdl1", "bp", "Hold a wall with one hand. Push your hips back while the free leg rises behind you, back flat.", "Hold the backpack in the free hand."],
   rdld: ["Dumbbell Romanian deadlift", "rdl", "db", "Dumbbells slide down your thighs, hips back, back flat, stop when the hamstrings stretch."],
   rdlb: ["Romanian deadlift", "rdl", "bb", "Bar close to your legs, hips back, back flat, lower to mid-shin, squeeze your glutes to stand."],
   bss: ["Bulgarian split squat", "bss", "bp", "Rear foot on a chair, front foot far forward. A slight forward lean puts more work on the front glute.", "Hold the backpack."],
@@ -899,22 +960,22 @@ const EXD = {
   rld: ["Dumbbell reverse lunges", "lunge", "db", "Dumbbells at your sides, step back, back knee close to the floor."],
   kb: ["Donkey kickbacks", "kickback", "bw", "On all fours, push one heel up toward the ceiling without arching your lower back.", "Loop a resistance band around your feet."],
   kbb: ["Banded kickbacks", "kickback", "band", "Band around your feet, on all fours. Push the heel up and back, squeeze at the top."],
-  kbc: ["Cable kickback", "kickback", "mc", "Ankle strap on a low cable, lean forward a little, kick back and squeeze. Don't swing."],
+  kbc: ["Cable kickback", "cablekick", "mc", "Ankle strap on a low cable, lean forward a little, kick back and squeeze. Don't swing."],
   ab: ["Side-lying leg raise", "abduction", "bw", "Lie on your side, lift the top leg slightly behind you, toes pointing forward. Slow on the way down.", "Add a band above the knees."],
   abb: ["Banded side-lying leg raise", "abduction", "band", "Band above the knees, lie on your side, lift the top leg slightly behind you."],
-  abm: ["Hip abduction machine", "abduction", "mc", "Lean your chest slightly forward to work the upper glutes. Control the way back."],
+  abm: ["Hip abduction machine", "", "mc", "Lean your chest slightly forward to work the upper glutes. Control the way back."],
   lc: ["Seated leg curl", "legcurl", "mc", "Pad just above your heels, curl all the way, slow on the way back."],
   cf: ["Calf raises on a step", "calf", "bp", "Full stretch at the bottom, pause at the top.", "One leg at a time."],
   cfm: ["Standing calf raise", "calf", "mc", "Full stretch at the bottom, 1-second pause at the top."],
   pu: ["Push-ups", "pushup", "bw", "Straight body from head to heels, chest to a fist's height off the floor. Knees down is fine at first.", "Feet on a chair, or a backpack on your back."],
   pk: ["Pike push-ups", "pike", "bw", "Hips high, lower the top of your head toward the floor between your hands.", "Feet on a chair."],
   dp: ["Chair dips", "dips", "bw", "Hands on a sturdy chair behind you, bend elbows to about 90°.", "Straighten your legs, then put your feet on another chair."],
-  fp: ["Dumbbell floor press", "bench", "db", "Lie on the floor, press the dumbbells up, lower until your elbows lightly touch the floor."],
+  fp: ["Dumbbell floor press", "floorpress", "db", "Lie on the floor, press the dumbbells up, lower until your elbows lightly touch the floor."],
   bp: ["Bench press", "bench", "bb", "Shoulder blades squeezed, feet planted, bar to the lower chest, press up."],
   dbp: ["Dumbbell bench press", "bench", "db", "Shoulder blades squeezed, lower the dumbbells beside your chest, press up."],
   rw: ["Backpack rows", "rows", "bp", "Hinge at the hips, back flat, pull the bag to your belly button and squeeze your shoulder blades.", "Add books, or row one arm at a time."],
   rwd: ["Dumbbell row", "rows", "db", "One hand on a chair, pull the dumbbell to your hip, elbow close to your side."],
-  rwc: ["Seated cable row", "rows", "mc", "Chest up, pull the handle to your belly, squeeze your shoulder blades, slow return."],
+  rwc: ["Seated cable row", "cablerow", "mc", "Chest up, pull the handle to your belly, squeeze your shoulder blades, slow return."],
   pd: ["Lat pull-down", "pulldown", "mc", "Pull the bar to your upper chest, elbows down and in. Don't lean far back."],
   pdb: ["Band pull-down", "pulldown", "band", "Band anchored at the top of a door. Pull your elbows down to your ribs."],
   ohb: ["Backpack overhead press", "ohpress", "bp", "Hold the backpack by its sides at your chest, press it overhead, ribs down.", "Add books, or do pike push-ups."],
@@ -923,7 +984,7 @@ const EXD = {
   lrd: ["Dumbbell lateral raise", "latraise", "db", "Light dumbbells, lead with the elbows, stop at shoulder height, slow down."],
   cu: ["Backpack curls", "curl", "bp", "Elbows pinned at your sides, curl up, lower slowly.", "Slow 3-second lowering."],
   cud: ["Dumbbell curl", "curl", "db", "Elbows pinned at your sides, no swinging, lower slowly."],
-  tp: ["Triceps push-down", "", "mc", "Elbows pinned at your sides, push the rope down and spread it at the bottom."],
+  tp: ["Triceps push-down", "pushdown", "mc", "Elbows pinned at your sides, push the rope down and spread it at the bottom."],
   pl: ["Plank", "plank", "time", "Squeeze your glutes, ribs down, back flat. Knees down if your back sags.", "Lift one foot, or add 10 s."],
   sp: ["Side plank", "sideplank", "time", "Hips up in a straight line. Trains the sides of the waist without bulking it.", "Lift the top leg."],
   dbg: ["Dead bug", "deadbug", "bw", "On your back, lower back pressed into the floor. Lower the opposite arm and leg slowly. Reps are per side.", "Hold a water bottle in your hands."],
@@ -933,15 +994,15 @@ const EXD = {
   pu_knee: ["Knee push-ups", "pushknee", "bw", "Knees on the floor, hips in line with your back, chest close to the floor."],
   pu_dec: ["Decline push-ups", "pushdec", "bw", "Feet on a chair, hands on the floor, body straight. Works the upper chest harder."],
   pu_bp: ["Backpack push-ups", "pushup", "bp", "Wear a loaded backpack, straps tight. Body straight, chest close to the floor."],
-  pk_el: ["Elevated pike push-ups", "pike", "bw", "Feet on a chair, hips high, lower the top of your head toward the floor."],
+  pk_el: ["Elevated pike push-ups", "", "bw", "Feet on a chair, hips high, lower the top of your head toward the floor."],
   dp_bent: ["Chair dips, knees bent", "dips", "bw", "Hands on a sturdy chair behind you, feet flat and knees bent. Lower until elbows reach about 90°."],
-  dp_feet: ["Feet-up chair dips", "dips", "bw", "Hands on one chair, heels on another. Lower until elbows reach about 90°."],
+  dp_feet: ["Feet-up chair dips", "", "bw", "Hands on one chair, heels on another. Lower until elbows reach about 90°."],
   hts1: ["Single-leg sofa hip thrust", "hipthrust1", "bp", "Upper back on the sofa edge, one foot down, the other leg up. Drive through the heel, squeeze 1 second at the top. Hold the backpack on your hips when it gets easy."],
   rw1: ["One-arm backpack row", "row1", "bp", "One hand and knee on a chair, pull the loaded backpack to your hip, elbow close. One arm can handle the full bag."],
   neg: ["Negative pull-ups", "negative", "bw", "Jump or step up so your chin is over the bar, then lower yourself as slowly as you can, about 5 seconds.", "", "3-6"],
   chin: ["Chin-ups", "pullup", "bw", "Palms facing you, pull until your chin passes the bar, lower all the way.", "", "4-8"],
   pullup: ["Pull-ups", "pullup", "bw", "Palms facing away, pull until your chin passes the bar, lower all the way.", "", "4-10"],
-  sp_knee: ["Knee side plank", "sideplank", "time", "On your side with the bottom knee down, lift your hips into a straight line."]
+  sp_knee: ["Knee side plank", "", "time", "On your side with the bottom knee down, lift your hips into a straight line."]
 };
 /* Movement patterns: what each slot trains, with the exercise options at each place (first = default).
    "L:x" = a progression ladder (easier → harder versions); "@bar" = pull-up bar ladder when the person has a bar. */
@@ -1112,6 +1173,7 @@ function trainerFields(p) {
     <label class="field"><span>Target weight (kg, optional)</span><input type="number" id="pf-target" inputmode="decimal" min="30" max="250" step="0.5" value="${p.targetKg || ""}" placeholder="e.g. 68"></label>
     <div class="field"><span>Pace</span><div class="seg" role="radiogroup">${Object.entries(PACES).map(([k, l]) => radio("pf-pace", k, l, c.pace === k)).join("")}</div></div>
     <div class="field"><span>Where you train</span><div class="opts">${Object.entries(PLACES).map(([k, l]) => radio("pf-place", k, l, c.place === k)).join("")}</div></div>
+    <label class="row" style="gap:10px;align-items:flex-start"><input type="checkbox" id="pf-bar" ${p.bar ? "checked" : ""} style="width:20px;height:20px;margin-top:2px;accent-color:var(--green)"><span class="small"><b>I have a pull-up bar</b><br><span class="muted">Adds pull-ups, chin-ups and slow lowering pull-ups for your back. A door-frame bar works.</span></span></label>
     <div class="field"><span>Training days a week</span><div class="seg" role="radiogroup">${[2, 3, 4, 5].map(n => radio("pf-days", n, n, c.days === n)).join("")}</div></div>
     <label class="field"><span>Lifting experience</span><select id="pf-level">${Object.entries(LEVELS).map(([k, l]) => `<option value="${k}" ${c.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
   </div>`;
@@ -1132,6 +1194,7 @@ function readTrainer() {
   if (r("pf-place")) o.place = r("pf-place");
   if (r("pf-days")) o.days = Number(r("pf-days"));
   if (v("pf-level")) o.level = v("pf-level");
+  const bar = document.getElementById("pf-bar"); if (bar) o.bar = bar.checked;
   return o;
 }
 
@@ -1488,6 +1551,8 @@ function figLoop(ts) {
     svg.querySelector(".f-near").setAttribute("d", fr.near);
     svg.querySelector(".f-far").setAttribute("d", fr.far);
     const h = svg.querySelector(".f-head"); h.setAttribute("cx", fr.head[0].toFixed(1)); h.setAttribute("cy", fr.head[1].toFixed(1));
+    const cb = svg.querySelector(".f-cable"); if (cb) cb.setAttribute("d", fr.cable);
+    const gp = svg.querySelector(".f-grip"); if (gp) gp.setAttribute("d", fr.grip);
     const bag = svg.querySelector(".f-bag"); if (bag && fr.bag) { bag.setAttribute("x", (fr.bag[0] - 7).toFixed(1)); bag.setAttribute("y", (fr.bag[1] - 2).toFixed(1)); }
   });
   figRAF = requestAnimationFrame(figLoop);
@@ -1724,7 +1789,7 @@ function meHTML() {
       ${kv("You", `${p.sex === "m" ? "Male" : "Female"} · ${p.age} yrs · ${p.heightCm} cm · ${fmt1(t.w)} kg`)}
       ${kv("Day", esc(actLabel(p)))}
       ${kv("Goal", `${GOALS[p.goal]}${p.targetKg && p.goal !== "maintain" ? ` to ${fmt1(p.targetKg)} kg` : ""} · ${esc(bgLabel(c.bg))}`)}
-      ${kv("Training", `${c.days} days ${PLACE_SHORT[c.place]} · ${esc(LEVELS[c.level].toLowerCase())}`)}
+      ${kv("Training", `${c.days} days ${PLACE_SHORT[c.place]} · ${esc(LEVELS[c.level].toLowerCase())}${p.bar && c.place !== "gym" ? " · pull-up bar" : ""}`)}
       ${p.budget ? kv("Food budget", naira(p.budget) + " a day") : ""}
     </div>
     ${conflict ? `<p class="small" style="margin:10px 0 0;color:var(--warn)">${esc(conflict)}</p>` : ""}
