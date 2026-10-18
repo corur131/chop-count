@@ -207,6 +207,8 @@ textarea { min-height: 90px; font-size: .8rem; font-family: ui-monospace, Menlo,
 .figbox a { color: var(--green); font-weight: 700; text-decoration: none; }
 
 .protline { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.exctl { margin-top: 8px; gap: 6px; }
+.exctl .chip { font-size: .78rem; padding: 6px 10px; }
 .kvs { display: grid; gap: 8px; }
 .kv { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; font-size: .9rem; }
 .kv b { font-weight: 600; }
@@ -328,7 +330,7 @@ const FIGS = {
 const FIG_FOR = {
   "Push-ups": "pushup", "Backpack rows": "rows", "Chair dips": "dips", "Pike push-ups": "pike", "Plank": "plank", "Squats": "squat",
   "Reverse lunges": "lunge", "Glute bridges": "bridge", "Calf raises on a step": "calf", "Side plank": "sideplank", "Step-ups on a stair": "stepup",
-  "Marching on the spot": "march", "Easy walk": "walk", "Brisk walk": "walk", "Crunches": "crunch", "Lying leg raises": "legraise", "Superman hold": "superman",
+  "Marching on the spot": "march", "Easy walk": "walk", "Brisk walk": "walk", "Crunches": "crunch", "Lying leg raises": "legraise", "Superman hold": "superman", "Dead bug": "deadbug",
   "Hamstring stretch": "hamstring", "Hip flexor stretch": "hipflexor", "Chest stretch in a doorway": "chest", "Child's pose": "child"
 };
 function figDir(a) { const r = a * Math.PI / 180; return [Math.cos(r), Math.sin(r)]; }
@@ -838,8 +840,9 @@ function streak(t) {
 /* ---------- Workouts ---------- */
 function walkEx(min, wk, brisk) { return [
   { n: brisk ? "Brisk walk" : "Easy walk", d: `${min} min`, t: brisk ? "Fast enough that talking is a little hard. Counts toward your steps." : "Relaxed pace. Gets blood moving to sore muscles." },
-  { n: "Crunches", d: `3 × ${12 + wk}`, t: "Optional core work. Lift your shoulders, not your neck." },
-  { n: "Lying leg raises", d: `3 × ${8 + wk}`, t: "Lower back pressed to the floor. Slow on the way down." },
+  { n: "Plank", d: `3 × ${20 + 5 * wk} s`, t: "Squeeze your glutes, ribs down, back flat. Knees down if your back sags." },
+  { n: "Side plank", d: `2 × ${15 + 5 * wk} s each side`, t: "Hips up in a straight line. Trains the sides of the waist without bulking it." },
+  { n: "Dead bug", d: `3 × ${6 + wk} each side`, t: "Lower back pressed into the floor, lower the opposite arm and leg slowly." },
   { n: "Superman hold", d: `3 × ${20 + 5 * wk} s`, t: "Lying face down, lift arms and legs together. Strengthens your back." }]; }
 function restEx() { return [
   { n: "Hamstring stretch", d: "2 × 30 s each leg", t: "Leg straight on a chair, lean forward gently." },
@@ -910,7 +913,6 @@ const EXD = {
   bp: ["Bench press", "bench", "bb", "Shoulder blades squeezed, feet planted, bar to the lower chest, press up."],
   dbp: ["Dumbbell bench press", "bench", "db", "Shoulder blades squeezed, lower the dumbbells beside your chest, press up."],
   rw: ["Backpack rows", "rows", "bp", "Hinge at the hips, back flat, pull the bag to your belly button and squeeze your shoulder blades.", "Add books, or row one arm at a time."],
-  tr: ["Table rows", "rows", "bw", "Lie under a sturdy table, grip the edge, pull your chest to it with your body straight. Test the table first.", "Walk your feet further forward and pause at the top."],
   rwd: ["Dumbbell row", "rows", "db", "One hand on a chair, pull the dumbbell to your hip, elbow close to your side."],
   rwc: ["Seated cable row", "rows", "mc", "Chest up, pull the handle to your belly, squeeze your shoulder blades, slow return."],
   pd: ["Lat pull-down", "pulldown", "mc", "Pull the bar to your upper chest, elbows down and in. Don't lean far back."],
@@ -925,38 +927,100 @@ const EXD = {
   pl: ["Plank", "plank", "time", "Squeeze your glutes, ribs down, back flat. Knees down if your back sags.", "Lift one foot, or add 10 s."],
   sp: ["Side plank", "sideplank", "time", "Hips up in a straight line. Trains the sides of the waist without bulking it.", "Lift the top leg."],
   dbg: ["Dead bug", "deadbug", "bw", "On your back, lower back pressed into the floor. Lower the opposite arm and leg slowly. Reps are per side.", "Hold a water bottle in your hands."],
-  lgr: ["Lying leg raises", "legraise", "bw", "Lower back pressed to the floor, slow on the way down.", "Pause with heels just off the floor."]
+  lgr: ["Lying leg raises", "legraise", "bw", "Lower back pressed to the floor, slow on the way down.", "Pause with heels just off the floor."],
+  pu_wall: ["Wall push-ups", "pushwall", "bw", "Hands on the wall at shoulder height, body straight, bring your chest to the wall and push back."],
+  pu_inc: ["Incline push-ups", "pushinc", "bw", "Hands on a sturdy table edge or bed frame, body straight from head to heels, chest to the edge."],
+  pu_knee: ["Knee push-ups", "pushknee", "bw", "Knees on the floor, hips in line with your back, chest close to the floor."],
+  pu_dec: ["Decline push-ups", "pushdec", "bw", "Feet on a chair, hands on the floor, body straight. Works the upper chest harder."],
+  pu_bp: ["Backpack push-ups", "pushup", "bp", "Wear a loaded backpack, straps tight. Body straight, chest close to the floor."],
+  pk_el: ["Elevated pike push-ups", "pike", "bw", "Feet on a chair, hips high, lower the top of your head toward the floor."],
+  dp_bent: ["Chair dips, knees bent", "dips", "bw", "Hands on a sturdy chair behind you, feet flat and knees bent. Lower until elbows reach about 90°."],
+  dp_feet: ["Feet-up chair dips", "dips", "bw", "Hands on one chair, heels on another. Lower until elbows reach about 90°."],
+  hts1: ["Single-leg sofa hip thrust", "hipthrust1", "bp", "Upper back on the sofa edge, one foot down, the other leg up. Drive through the heel, squeeze 1 second at the top. Hold the backpack on your hips when it gets easy."],
+  rw1: ["One-arm backpack row", "row1", "bp", "One hand and knee on a chair, pull the loaded backpack to your hip, elbow close. One arm can handle the full bag."],
+  neg: ["Negative pull-ups", "negative", "bw", "Jump or step up so your chin is over the bar, then lower yourself as slowly as you can, about 5 seconds.", "", "3-6"],
+  chin: ["Chin-ups", "pullup", "bw", "Palms facing you, pull until your chin passes the bar, lower all the way.", "", "4-8"],
+  pullup: ["Pull-ups", "pullup", "bw", "Palms facing away, pull until your chin passes the bar, lower all the way.", "", "4-10"],
+  sp_knee: ["Knee side plank", "sideplank", "time", "On your side with the bottom knee down, lift your hips into a straight line."]
 };
-/* Sessions: each slot is [home, home-with-kit, gym, sets, rep range, flags]. Flags: p main lift, v extra set for V-shape, g extra set for glute growth, c core. */
+/* Movement patterns: what each slot trains, with the exercise options at each place (first = default).
+   "L:x" = a progression ladder (easier → harder versions); "@bar" = pull-up bar ladder when the person has a bar. */
+const PAT = {
+  squat: { home: ["sq", "bss"], kit: ["gsq", "bssd"], gym: ["bsq", "lp", "gsq"] },
+  single: { home: ["bss", "rl", "su"], kit: ["bssd", "rld", "sud"], gym: ["bssd", "rld", "lp"] },
+  step: { home: ["su", "rl", "bss"], kit: ["sud", "rld", "bssd"], gym: ["sud", "lp", "bssd"] },
+  lunge: { home: ["rl", "su", "bss"], kit: ["rld", "sud", "bssd"], gym: ["rld", "lp", "bssd"] },
+  hinge: { home: ["rdlp", "rdls"], kit: ["rdld", "rdls"], gym: ["rdlb", "rdld"] },
+  hams: { home: ["rdls", "gbs"], kit: ["rdls", "rdld"], gym: ["lc", "rdld"] },
+  thrust: { home: ["L:thrust", "gb"], kit: ["htd", "L:thrust"], gym: ["htb", "htd"] },
+  kick: { home: ["kb", "gbs"], kit: ["kbb", "kb"], gym: ["kbc", "kbb"] },
+  abd: { home: ["ab"], kit: ["abb", "ab"], gym: ["abm", "abb"] },
+  calf: { home: ["cf"], kit: ["cf"], gym: ["cfm", "cf"] },
+  hpush: { home: ["L:push", "L:dips"], kit: ["fp", "L:push"], gym: ["bp", "dbp", "L:push"] },
+  hpush2: { home: ["L:dips", "L:push"], kit: ["L:push", "fp"], gym: ["dbp", "bp", "L:push"] },
+  hpushB: { home: ["L:push", "L:dips"], kit: ["L:push", "fp"], gym: ["dbp", "bp", "L:push"] },
+  vpush: { home: ["L:pike", "ohb"], kit: ["ohd", "L:pike"], gym: ["ohd", "L:pike"] },
+  latr: { home: ["lr"], kit: ["lrd"], gym: ["lrd"] },
+  row: { home: ["rw", "rw1"], kit: ["rwd", "rw1"], gym: ["rwc", "rwd"] },
+  vpull: { home: ["@bar", "rw1", "rw"], kit: ["@bar", "pdb", "rwd"], gym: ["pd", "rwc"] },
+  curl: { home: ["cu"], kit: ["cud"], gym: ["cud"] },
+  tri: { home: ["L:dips"], kit: ["L:dips"], gym: ["tp", "L:dips"] },
+  core: { home: ["dbg", "pl", "L:side", "lgr"], kit: ["dbg", "pl", "L:side", "lgr"], gym: ["dbg", "pl", "L:side", "lgr"] }
+};
+const LADDERS = { push: ["pu_wall", "pu_inc", "pu_knee", "pu", "pu_dec", "pu_bp"], pike: ["ohb", "pk", "pk_el"], dips: ["dp_bent", "dp", "dp_feet"], thrust: ["gb", "gbs", "hts", "hts1"], pull: ["neg", "chin", "pullup"], side: ["sp_knee", "sp"] };
+function ladderStart(L, c, sex) {
+  const lv = c.level;
+  if (L === "push") return sex === "m" ? { new: 3, some: 3, exp: 4 }[lv] : { new: 1, some: 2, exp: 3 }[lv];
+  if (L === "side") return sex === "m" || lv !== "new" ? 1 : 0;
+  if (L === "pike") return sex === "m" ? (lv === "exp" ? 2 : 1) : (lv === "exp" ? 1 : 0);
+  return { new: 0, some: 1, exp: 2 }[lv];
+}
+/* Ladder moves: state.lv[L] = [[date, ±1, "a" auto | "m" manual]]. Auto moves count from the next day; manual ones from the same day. */
+function ladderIdx(L, ds) {
+  const p = state.profile, ev = (state.lv && state.lv[L]) || [];
+  let i = ladderStart(L, tcfg(p), p.sex);
+  ev.forEach(e => { if (e[0] < ds || (e[2] === "m" && e[0] <= ds)) i += e[1]; });
+  return Math.max(0, Math.min(LADDERS[L].length - 1, i));
+}
+function patOptions(pat, c, ds) {
+  const p = state.profile;
+  return PAT[pat][c.place].filter(x => x !== "@bar" || p.bar).map(x => x === "@bar" ? "L:pull" : x)
+    .map(x => x.startsWith("L:") ? { id: LADDERS[x.slice(2)][ladderIdx(x.slice(2), ds)], ladder: x.slice(2) } : { id: x, ladder: null })
+    .filter((o, i, arr) => arr.findIndex(q => q.id === o.id) === i);
+}
+/* Sessions: [title, short, slots]; slot = [pattern, sets, reps, flags, preferred option].
+   Flags: p main lift, v +1 set for V-shape, g +1 set for glute growth, c core. Weekly volume is checked by the test suite. */
 const SESS = {
-  GA: ["Glutes & hamstrings", "Glutes", [["hts", "htd", "htb", 3, "8-12", "p g"], ["rdlp", "rdld", "rdlb", 3, "8-12", "p g"], ["bss", "bssd", "bssd", 3, "8-12"], ["ab", "abb", "abm", 2, "12-20"], ["dbg", "dbg", "dbg", 3, "8-12", "c"]]],
-  GB: ["Glutes & quads", "Glutes", [["sq", "gsq", "bsq", 3, "6-10", "p"], ["su", "sud", "lp", 3, "10-15", "g"], ["rdls", "rdls", "lc", 3, "10-15"], ["kb", "kbb", "kbc", 3, "12-20", "g"], ["sp", "sp", "sp", 2, "20-40", "c"]]],
-  GC: ["Glute builder", "Glutes", [["gbs", "htd", "htb", 3, "12-20", "p g"], ["rl", "rld", "bssd", 3, "10-15"], ["rdlp", "rdld", "rdld", 3, "10-15"], ["kb", "kbb", "kbc", 2, "12-20"], ["ab", "abb", "abm", 2, "12-20"]]],
-  UA: ["Upper body: back & shoulders", "Upper", [["tr", "rwd", "pd", 3, "8-12", "p v"], ["pu", "fp", "dbp", 3, "8-12", "p"], ["rw", "pdb", "rwc", 3, "10-15"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["pl", "pl", "pl", 3, "20-45", "c"]]],
-  UB: ["Upper body & core", "Upper", [["rw", "rwd", "pd", 3, "10-15", "v"], ["ohb", "ohd", "ohd", 3, "8-12"], ["pu", "fp", "dbp", 2, "10-15"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["dbg", "dbg", "dbg", 3, "8-12", "c"]]],
-  FG1: ["Full body · glutes first", "Full", [["hts", "htd", "htb", 3, "8-12", "p g"], ["sq", "gsq", "lp", 3, "8-12", "p"], ["tr", "rwd", "pd", 3, "8-12"], ["pu", "fp", "dbp", 2, "8-12"], ["ab", "abb", "abm", 2, "12-20"]]],
-  FG2: ["Full body · glutes & back", "Full", [["rdlp", "rdld", "rdlb", 3, "8-12", "p g"], ["bss", "bssd", "bssd", 3, "8-12"], ["rw", "rwd", "rwc", 3, "10-15"], ["ohb", "ohd", "ohd", 2, "8-12"], ["kb", "kbb", "kbc", 2, "12-20"], ["dbg", "dbg", "dbg", 2, "8-12", "c"]]],
-  FA: ["Full body A", "Full", [["sq", "gsq", "bsq", 3, "6-10", "p"], ["pu", "fp", "bp", 3, "6-10", "p"], ["tr", "rwd", "rwc", 3, "8-12"], ["gb", "htd", "htb", 3, "8-12"], ["pl", "pl", "pl", 3, "20-45", "c"]]],
-  FB: ["Full body B", "Full", [["rdlp", "rdld", "rdlb", 3, "8-12", "p"], ["pk", "ohd", "ohd", 3, "8-12"], ["rw", "pdb", "pd", 3, "8-12", "v"], ["rl", "rld", "lp", 3, "10-15"], ["dbg", "dbg", "dbg", 3, "8-12", "c"]]],
-  FC: ["Full body C", "Full", [["bss", "bssd", "bssd", 3, "8-12", "p"], ["dp", "dbp", "dbp", 3, "8-12"], ["tr", "rwd", "pd", 3, "8-12", "v"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["sp", "sp", "sp", 2, "20-40", "c"]]],
-  U1: ["Upper body A", "Upper", [["pu", "fp", "bp", 3, "6-10", "p"], ["rw", "rwd", "rwc", 3, "6-10", "p"], ["pk", "ohd", "ohd", 3, "8-12"], ["tr", "pdb", "pd", 3, "8-12", "v"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["cu", "cud", "cud", 2, "10-15"]]],
-  U2: ["Upper body B", "Upper", [["tr", "rwd", "pd", 3, "6-10", "p v"], ["ohb", "ohd", "ohd", 3, "6-10", "p"], ["pu", "dbp", "dbp", 3, "8-12"], ["rw", "pdb", "rwc", 3, "10-15"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["dp", "dp", "tp", 2, "10-15"]]],
-  L1: ["Lower body A", "Legs", [["sq", "gsq", "bsq", 3, "6-10", "p"], ["rdlp", "rdld", "rdlb", 3, "8-12", "p"], ["rl", "rld", "lp", 3, "10-15"], ["gbs", "htd", "lc", 3, "10-15"], ["cf", "cf", "cfm", 3, "10-15"], ["lgr", "lgr", "lgr", 2, "10-15", "c"]]],
-  L2: ["Lower body B", "Legs", [["bss", "bssd", "lp", 3, "8-12", "p"], ["hts", "htd", "htb", 3, "8-12", "p"], ["rdls", "rdld", "lc", 3, "10-15"], ["su", "sud", "sud", 2, "10-15"], ["cf", "cf", "cfm", 3, "10-15"], ["pl", "pl", "pl", 2, "30-60", "c"]]],
-  PU: ["Push: chest, shoulders, triceps", "Push", [["pu", "fp", "bp", 4, "6-10", "p"], ["pk", "ohd", "ohd", 3, "8-12"], ["lr", "lrd", "lrd", 3, "12-20", "v"], ["dp", "dp", "tp", 3, "10-15"], ["pl", "pl", "pl", 2, "30-60", "c"]]],
-  PL: ["Pull: back & biceps", "Pull", [["tr", "rwd", "pd", 4, "6-10", "p v"], ["rw", "pdb", "rwc", 3, "8-12"], ["rdlp", "rdld", "rdlb", 3, "8-12"], ["cu", "cud", "cud", 3, "10-15"], ["dbg", "dbg", "dbg", 2, "8-12", "c"]]],
-  LG: ["Legs", "Legs", [["sq", "gsq", "bsq", 4, "6-10", "p"], ["rdlp", "rdld", "rdlb", 3, "8-12", "p"], ["bss", "bssd", "lp", 3, "10-15"], ["gbs", "htd", "lc", 3, "10-15"], ["cf", "cf", "cfm", 3, "10-15"]]]
+  F1: ["Full body · glutes first", "Full", [["thrust", 4, "8-12", "p g"], ["squat", 3, "8-12", "p"], ["vpull", 4, "8-12"], ["hpush", 3, "8-12"], ["latr", 2, "12-20"], ["abd", 2, "12-20"]]],
+  F2: ["Full body · glutes & back", "Full", [["hinge", 4, "8-12", "p"], ["single", 3, "8-12"], ["row", 3, "10-15"], ["vpush", 2, "8-12"], ["kick", 3, "12-20", "g"], ["latr", 2, "12-20"], ["core", 2, "8-12", "c"]]],
+  S1: ["Glutes & back", "Glutes", [["thrust", 4, "8-12", "p g"], ["hinge", 3, "8-12", "p"], ["row", 3, "10-15"], ["hpush", 3, "8-12"], ["latr", 3, "12-20"], ["abd", 2, "12-20"]]],
+  S2: ["Legs & upper body", "Legs", [["squat", 3, "8-12", "p"], ["step", 3, "10-15"], ["vpull", 3, "8-12"], ["hpush2", 2, "10-15"], ["kick", 2, "12-20", "g"], ["core", 2, "8-12", "c"]]],
+  S3: ["Glutes & shoulders", "Glutes", [["single", 3, "8-12", "p"], ["hams", 3, "10-15"], ["row", 3, "10-15", "", 1], ["vpush", 2, "8-12"], ["latr", 2, "12-20"], ["core", 2, "20-40", "c", 2]]],
+  GA: ["Glutes & hamstrings", "Glutes", [["thrust", 4, "8-12", "p g"], ["hinge", 3, "8-12", "p"], ["single", 3, "8-12"], ["abd", 2, "12-20"], ["core", 2, "8-12", "c"]]],
+  GB: ["Glutes & quads", "Glutes", [["squat", 3, "8-12", "p"], ["step", 3, "10-15"], ["hams", 3, "10-15"], ["kick", 3, "12-20", "g"], ["core", 2, "20-40", "c", 2]]],
+  UA: ["Upper body: back & shoulders", "Upper", [["vpull", 4, "8-12", "p v"], ["hpush", 3, "8-12", "p"], ["row", 4, "10-15"], ["latr", 3, "12-20", "v"], ["core", 2, "20-45", "c", 1]]],
+  UB: ["Upper body & core", "Upper", [["row", 3, "10-15", "v", 1], ["vpush", 3, "8-12"], ["latr", 3, "12-20", "v"], ["hpush2", 2, "10-15"], ["core", 2, "8-12", "c"]]],
+  CC: ["Conditioning circuit", "Circuit", [["step", 2, "12-15"], ["hpush", 2, "8-12"], ["row", 2, "12-15"], ["latr", 2, "12-20"], ["core", 2, "20-40", "c", 1]]],
+  M2A: ["Full body A", "Full", [["squat", 3, "6-10", "p"], ["hpush", 4, "6-10", "p"], ["row", 4, "8-12", "p"], ["hinge", 3, "8-12"], ["latr", 3, "12-20", "v"], ["curl", 2, "10-15"]]],
+  M2B: ["Full body B", "Full", [["single", 3, "8-12", "p"], ["vpush", 3, "8-12", "p"], ["vpull", 4, "6-10", "p v"], ["thrust", 3, "8-12"], ["hpushB", 3, "8-12"], ["latr", 2, "12-20", "v"]]],
+  MA: ["Full body A", "Full", [["squat", 3, "6-10", "p"], ["hpush", 4, "6-10", "p"], ["row", 4, "8-12", "p"], ["hinge", 3, "8-12"], ["latr", 3, "12-20", "v"], ["tri", 2, "10-15"]]],
+  MB: ["Full body B", "Full", [["lunge", 3, "8-12", "p"], ["vpush", 3, "8-12", "p"], ["vpull", 4, "6-10", "p v"], ["hpushB", 3, "8-12"], ["curl", 3, "10-15"], ["latr", 2, "12-20", "v"], ["core", 2, "8-12", "c"]]],
+  MC: ["Full body C", "Full", [["single", 3, "8-12", "p"], ["hpush", 4, "6-10", "p"], ["row", 4, "8-12", "", 1], ["hams", 3, "10-15"], ["latr", 3, "12-20", "v"], ["core", 2, "20-45", "c", 1]]],
+  U1: ["Upper body A", "Upper", [["hpush", 4, "6-10", "p"], ["row", 4, "6-10", "p"], ["vpush", 3, "8-12"], ["vpull", 3, "8-12", "v"], ["latr", 3, "12-20", "v"], ["curl", 2, "10-15"], ["tri", 2, "10-15"]]],
+  L1: ["Lower body A", "Legs", [["squat", 4, "6-10", "p"], ["hinge", 3, "8-12", "p"], ["lunge", 3, "10-15"], ["hams", 3, "10-15"], ["calf", 3, "10-15"], ["core", 2, "10-15", "c", 3]]],
+  U2: ["Upper body B", "Upper", [["vpull", 4, "6-10", "p v"], ["vpush", 3, "6-10", "p"], ["hpushB", 5, "8-12"], ["row", 3, "10-15", "", 1], ["latr", 3, "12-20", "v"], ["curl", 2, "10-15"]]],
+  L2: ["Lower body B", "Legs", [["single", 3, "8-12", "p"], ["thrust", 3, "8-12", "p"], ["hams", 3, "10-15"], ["step", 2, "10-15"], ["calf", 3, "10-15"], ["core", 2, "20-45", "c", 1]]],
+  PU: ["Push: chest, shoulders, triceps", "Push", [["hpush", 4, "6-10", "p"], ["vpush", 3, "8-12"], ["hpush2", 3, "8-12"], ["latr", 3, "12-20", "v"], ["tri", 2, "10-15"]]],
+  PL: ["Pull: back & biceps", "Pull", [["vpull", 4, "6-10", "p v"], ["row", 4, "8-12"], ["hinge", 3, "8-12"], ["curl", 3, "10-15"], ["core", 2, "8-12", "c"]]],
+  LG: ["Legs", "Legs", [["squat", 4, "6-10", "p"], ["hinge", 3, "8-12", "p"], ["single", 3, "10-15"], ["hams", 3, "10-15"], ["calf", 3, "10-15"]]]
 };
-const MEN5 = ["PU", "PL", "LG", "U2", "L2"];
+const W_SPLIT = { 2: ["F1", "F2"], 3: ["S1", "S2", "S3"], 4: ["GA", "UA", "GB", "UB"], 5: ["GA", "UA", "GB", "UB", "CC"] };
+const M_SPLIT = { 2: ["M2A", "M2B"], 3: ["MA", "MB", "MC"], 4: ["U1", "L1", "U2", "L2"], 5: ["PU", "PL", "LG", "U1", "L2"] };
 const SPLITS = {
-  shape: { 2: ["FG1", "FG2"], 3: ["GA", "UA", "GB"], 4: ["GA", "UA", "GB", "UB"], 5: ["GA", "UA", "GB", "UB", "GC"] },
-  glutes: { 2: ["FG1", "FG2"], 3: ["GA", "UA", "GB"], 4: ["GA", "UA", "GB", "GC"], 5: ["GA", "UA", "GB", "UB", "GC"] },
-  tone: { 2: ["FG1", "FG2"], 3: ["FA", "FB", "FC"], 4: ["GA", "UA", "GB", "UB"], 5: ["GA", "UA", "GB", "UB", "GC"] },
-  flose: { 2: ["FG1", "FG2"], 3: ["FA", "FB", "FC"], 4: ["GA", "UA", "GB", "UB"], 5: ["GA", "UA", "GB", "UB", "FC"] },
-  muscle: { 2: ["FA", "FB"], 3: ["FA", "FB", "FC"], 4: ["U1", "L1", "U2", "L2"], 5: MEN5 },
-  cut: { 2: ["FA", "FB"], 3: ["FA", "FB", "FC"], 4: ["U1", "L1", "U2", "L2"], 5: MEN5 },
-  vshape: { 2: ["FA", "FB"], 3: ["U1", "L1", "U2"], 4: ["U1", "L1", "U2", "L2"], 5: ["U1", "L1", "PU", "PL", "L2"] },
-  mfit: { 2: ["FA", "FB"], 3: ["FA", "FB", "FC"], 4: ["U1", "L1", "U2", "L2"], 5: ["U1", "L1", "U2", "L2", "FC"] }
+  shape: W_SPLIT, tone: W_SPLIT, flose: W_SPLIT,
+  glutes: { 2: ["F1", "F2"], 3: ["GA", "UA", "GB"], 4: ["GA", "UA", "GB", "UB"], 5: ["GA", "UA", "GB", "UB", "CC"] },
+  muscle: M_SPLIT, cut: M_SPLIT, vshape: M_SPLIT,
+  mfit: { 2: ["M2A", "M2B"], 3: ["MA", "MB", "MC"], 4: ["U1", "L1", "U2", "L2"], 5: ["U1", "L1", "U2", "L2", "CC"] }
 };
 const TRAIN_DAYS = { 2: [1, 4], 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6] }; // 0 = Sunday
 const RIR = { new: "2–3", some: "1–2", exp: "0–2" };
@@ -966,28 +1030,35 @@ function homeReps(r) { return { "6-10": "10-15", "8-12": "12-20", "10-15": "15-2
 function restSec(fl, reps) { return fl.includes("c") ? 45 : fl.includes("p") ? 150 : Number(reps.split("-")[0]) >= 12 ? 75 : 105; }
 function restText(s) { return s >= 150 ? "2–3 min" : s >= 105 ? "1½–2 min" : s >= 75 ? "60–90 s" : "45 s"; }
 function sessionFor(sid, ds) {
-  const c = tcfg(), [title, short, slots] = SESS[sid], pi = c.place === "gym" ? 2 : c.place === "kit" ? 1 : 0;
-  const deload = isDeload(ds), wk = trainWeek(ds);
+  const c = tcfg(), [title, short, slots] = SESS[sid], p = state.profile;
+  const deload = isDeload(ds), wk = trainWeek(ds), circuit = sid === "CC";
   const ex = slots.map((sl, i) => {
-    const id = sl[pi], d = EXD[id], fl = sl[5] || "";
-    let sets = sl[3];
-    if (c.level === "new" && !fl.includes("p")) sets = Math.max(2, sets - 1);
+    const [pat, base, reps0, fl = "", pref = 0] = sl, opts = patOptions(pat, c, ds);
+    const skey = sid + "." + i + "." + c.place, sw = state.swap && state.swap[skey];
+    const o = opts[(sw != null ? sw : Math.min(pref, opts.length - 1)) % opts.length], id = o.id, d = EXD[id];
+    let sets = base;
+    if (c.level === "new" && wk <= 2) sets = Math.max(2, sets - 1);
     if (c.level === "exp" && fl.includes("p")) sets += 1;
     if (c.bg === "vshape" && fl.includes("v")) sets += 1;
     if (c.bg === "glutes" && fl.includes("g")) sets += 1;
     if (deload) sets = Math.max(1, Math.round(sets * 0.6));
-    let reps = sl[4];
-    if ((d[2] === "bw" || d[2] === "bp") && !fl.includes("c")) reps = homeReps(reps);
-    const timed = d[2] === "time", uni = /Bulgarian|Single-leg|Step-ups|lunges|kickback|Side-lying|Dead bug|Dumbbell row/i.test(d[0]);
-    const rest = restSec(fl, reps);
-    /* History is keyed by exercise + rep range, so switching home/gym or sessions never reuses another exercise's numbers. */
-    return { key: id + "@" + reps, id, n: d[0], fig: d[1], kind: d[2], t: d[3], harder: d[4] || "", sets, reps, timed, rest, main: fl.includes("p"),
+    let reps = d[5] || reps0;
+    if ((d[2] === "bw" || d[2] === "bp") && !fl.includes("c") && !d[5]) reps = homeReps(reps);
+    if (d[2] === "time" && !/^[2-6]0-/.test(reps)) reps = "20-40";
+    const timed = d[2] === "time", uni = /Bulgarian|Single-leg|Step-ups|step-ups|lunges|kickback|Side-lying|Dead bug|Dumbbell row|One-arm/i.test(d[0]);
+    const rest = circuit ? 20 : restSec(fl, reps);
+    const L = o.ladder, li = L ? LADDERS[L].indexOf(id) : -1;
+    return { key: id + "@" + reps, id, n: d[0], fig: d[1], kind: d[2], t: d[3], harder: d[4] || "", sets, reps, timed, rest, main: fl.includes("p"), pat, skey,
+      ladder: L, easier: L && li > 0 ? EXD[LADDERS[L][li - 1]][0] : "", next: L && li < LADDERS[L].length - 1 ? EXD[LADDERS[L][li + 1]][0] : "",
+      nopts: opts.length, warm: fl.includes("p") && ["bb", "db", "mc"].includes(d[2]),
       d: `${sets} × ${reps.replace("-", "–")}${timed ? " s" : ""}${uni && !timed ? " each side" : ""}` };
   });
   const rir = deload ? "3–4" : (c.level === "new" && wk <= 2) ? "3" : RIR[c.level];
   const mins = Math.round(ex.reduce((a, e) => a + e.sets * (40 + e.rest), 0) / 60) + 8;
-  return { type: "strength", sid, title, short, ex, rir, mins, deload,
-    sub: `${deload ? "Lighter week: fewer sets, same weights. " : ""}Warm up 5 min, then do the moves in order. Each set: stop with ${rir} reps left in the tank.` };
+  const ramp = c.level === "new" && wk <= 2 && !deload ? "Starter weeks: one set fewer per move while you learn. " : "";
+  return { type: "strength", sid, title, short, ex, rir, mins, deload, circuit,
+    sub: circuit ? `Circuit: do one set of each move back to back, rest 1–2 min, repeat for ${ex[0].sets} rounds. Keep a steady pace; this one is for fitness and calorie burn.`
+      : `${deload ? "Lighter week: fewer sets, same weights. " : ramp}Warm up 5 min, then do the moves in order. Each set: stop with ${rir} reps left in the tank.` };
 }
 function workoutFor(ds) {
   const p = state.profile, c = tcfg(p), dow = parseDay(ds).getDay();
@@ -1015,6 +1086,7 @@ function coachHint(e, ds) {
   const sum = last.sets.map(s => s.r).join(", ") + u + (kg ? ` at ${fmt1(kg)} kg` : "");
   const top = last.sets.length >= Math.min(e.sets, 2) && last.sets.every(s => s.r >= hi);
   if (!top) return `Last time: ${sum}. Same ${loaded ? "weight" : "version"}; beat it by at least one rep${e.timed ? " or a few seconds" : ""}.`;
+  if (e.ladder && e.next && !e.timed) return `Last time: ${sum}. You've outgrown this version; tap “Too easy” to move to ${e.next}.`;
   const up = e.timed ? `add 5–10 s per set${e.harder ? ", or: " + e.harder : ""}`
     : e.kind === "bb" ? `add 2.5 kg (${fmt1(kg + 2.5)} kg) and work back up the range`
     : e.kind === "db" ? "go up to the next dumbbell and work back up the range"
@@ -1438,9 +1510,11 @@ function planHTML() {
       return `<span class="small muted">Set ${s + 1}</span><input type="number" inputmode="numeric" min="0" max="999" data-lg="${e.key}" data-s="${s}" data-f="r" data-d="${ds0}" value="${v.r || ""}" placeholder="${e.timed ? "seconds" : "reps"}" aria-label="Set ${s + 1} ${e.timed ? "seconds" : "reps"}" ${future ? "disabled" : ""}>${loaded ? `<input type="number" inputmode="decimal" min="0" max="500" step="0.5" data-lg="${e.key}" data-s="${s}" data-f="kg" data-d="${ds0}" value="${v.kg || ""}" placeholder="${lastKg ? fmt1(lastKg) + " kg" : "kg"}" aria-label="Set ${s + 1} weight in kg" ${future ? "disabled" : ""}>` : ""}`; }).join("");
     return `<div class="ex">${tick}<div style="min-width:0"><div class="row between" style="align-items:baseline"><b>${esc(e.n)}</b><span class="dose num">${esc(e.d)}</span></div>
       <p class="small muted" style="margin:3px 0 0">${esc(e.t)}</p>
+      ${e.warm ? `<p class="small muted" style="margin:6px 0 0">Warm-up first: 2 lighter sets, about half your working weight × 8, then ¾ × 4.</p>` : ""}
       <p class="small coach">${esc(coachHint(e, ds0))}</p>
       <div class="sets ${loaded ? "" : "one"}">${rows}</div>
       <div class="row between" style="margin-top:8px;max-width:300px"><span class="small muted">Rest ${restText(e.rest)}</span>${future ? "" : `<button class="btn line sm" data-act="rest" data-s="${e.rest}">Start rest timer</button>`}</div>
+      ${future ? "" : `<div class="wrapflex exctl">${e.easier ? `<button class="chip" data-act="ladder" data-l="${e.ladder}" data-v="-1">Too hard: ${esc(e.easier)}</button>` : ""}${e.next ? `<button class="chip" data-act="ladder" data-l="${e.ladder}" data-v="1">Too easy: ${esc(e.next)}</button>` : ""}${e.nopts > 1 ? `<button class="chip" data-act="swap" data-k="${e.skey}" data-n="${e.nopts}">Swap exercise</button>` : ""}</div>`}
       ${figBlock(e.n, e.fig)}</div></div>`;
   };
   return `${topbar("Workout", true)}
@@ -1822,6 +1896,15 @@ document.addEventListener("click", async ev => {
   }
   else if (a === "hconnect") healthConnect();
   else if (a === "hsync") syncSteps(true);
+  else if (a === "ladder") {
+    state.lv = state.lv || {}; (state.lv[el.dataset.l] = state.lv[el.dataset.l] || []).push([todayStr(), Number(el.dataset.v), "m"]);
+    save(); render(); toast(Number(el.dataset.v) > 0 ? "Moved up to the harder version" : "Switched to the easier version");
+  }
+  else if (a === "swap") {
+    state.swap = state.swap || {}; const k = el.dataset.k, cur = state.swap[k];
+    const sid = k.split(".")[0], i = Number(k.split(".")[1]), pref = SESS[sid][2][i][4] || 0;
+    state.swap[k] = ((cur != null ? cur : pref) + 1) % Number(el.dataset.n); save(); render();
+  }
   else if (a === "editprofile") { editProfile = true; render(); }
   else if (a === "canceledit") { editProfile = false; render(); }
   else if (a === "parq") { state.profile.parq = el.dataset.v; save(); render(); }
@@ -1876,6 +1959,14 @@ function logSet(el) {
   if (e && Array.from({ length: e.sets }, (_, k) => arr[k] && arr[k].r > 0).every(Boolean) && !d.ex[i]) {
     d.ex[i] = true; const tk = document.querySelector(`[data-act=extick][data-i="${i}"]`); if (tk) { tk.classList.add("on"); tk.setAttribute("aria-pressed", "true"); }
     if (wo.ex.every((_, k) => d.ex[k])) { d.wd = true; toast("Session done. Strong work."); }
+  }
+  /* Ladder: when every set reaches the top of the range, the next session moves to the harder version. */
+  if (e && e.ladder && e.next && !e.timed) {
+    const hi = Number(e.reps.split("-")[1]), done = Array.from({ length: e.sets }, (_, k) => arr[k] && arr[k].r >= hi).every(Boolean);
+    state.lv = state.lv || {}; const ev = state.lv[e.ladder] = state.lv[e.ladder] || [];
+    const today = ev.findIndex(x => x[0] === ds && x[2] === "a");
+    if (done && today < 0) { ev.push([ds, 1, "a"]); toast("Level up! Next time: " + e.next); }
+    else if (!done && today >= 0) ev.splice(today, 1);
   }
   save();
 }
